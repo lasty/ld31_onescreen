@@ -71,34 +71,22 @@ function Renderer(width, height, canvasid)
 		this.context.lineTo(x2, y2);
 	}
 
-	// Draws line segment
+	// Draws circle
 	this.Circle = function(x, y, r) {
 		this.context.beginPath();
 		this.context.arc(x, y, r, 0, Math.PI * 2, false);
 		this.context.stroke();
 	}
 
+	this.CircleFill = function(x, y, r) {
+		this.context.beginPath();
+		this.context.arc(x, y, r, 0, Math.PI * 2, false);
+		this.context.fill();
+	}
+
 
 	this.DrawTile = function(img, srcx, srcy, srcw, srch, x, y, w, h) {
 		this.context.drawImage(img, srcx, srcy, srcw, srch, x, y, w, h);
-	}
-
-};
-
-
-function Tile(renderer, img, x, y, w, h)
-{
-	this.renderer = renderer;
-	this.img = img;
-
-	this.x = x;
-	this.y = y;
-	this.w = w;
-	this.h = h;
-
-
-	this.Render = function(x, y, zoom) {
-		this.renderer.DrawTile(this.img, this.x, this.y, this.w, this.h, x, y, w*zoom, h*zoom);
 	}
 
 };

@@ -13,12 +13,20 @@ function Game(renderer, tileimg, entimg)
 	this.Render = function() {
 
 		this.world.Render();
-
 	}
 
 
 	this.Update = function(dt) {
 		this.world.Update(dt);
+	}
+
+
+	this.Key = function(k, key, down)
+	{
+		if (key == "W") { this.world.GetPlayer().moving_up = down; }
+		if (key == "S") { this.world.GetPlayer().moving_down = down; }
+		if (key == "A") { this.world.GetPlayer().moving_left = down; }
+		if (key == "D") { this.world.GetPlayer().moving_right = down; }
 	}
 
 }

@@ -22,7 +22,18 @@ hr {
 
 h1,h2 {
 	font-family: "Roboto Slab", serif;
+}
+
+h1 {
 	font-size: 16pt;
+}
+
+h2 {
+	font-size: 12pt;
+}
+
+#instructions {
+	background-color: #222;
 }
 
 #canvas {

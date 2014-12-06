@@ -61,6 +61,7 @@ function Entity(renderer, x, y, radius)
 	}
 
 	this.Update = function(dt) {
+		//console.log("Entity::update");
 		if (this.body)
 		{
 			this.position.x = toScreen(this.body.GetPosition().x);
@@ -80,6 +81,32 @@ function Entity(renderer, x, y, radius)
 }
 
 
+
+function Player(renderer, x, y, radius) {
+	Entity.call(this, renderer, x, y, radius);
+
+	this.moving_up = false;
+	this.moving_down = false;
+	this.moving_left = false;
+	this.moving_right = false;
+
+	this.move_force = 10;
+
+	var parent_update = this.Update;
+	this.Update = function(dt) {
+		//console.log("Player-update");
+		var f = this.move_force * dt;
+		if (this.moving_up) { this.AddForce(0, -f); }
+		if (this.moving_down) { this.AddForce(0, f); }
+		if (this.moving_left) { this.AddForce(-f, 0); }
+		if (this.moving_right) { this.AddForce(f, 0); }
+
+		parent_update.call(this, dt);
+	}
+}
+//Player.prototype = Object.create(Entity.prototype);
+
+
 function EntityFactory(renderer, img)
 {
 	this.renderer = renderer;
@@ -92,6 +119,7 @@ function EntityFactory(renderer, img)
 			e.FillColour = "rgba(255, 255, 128, 0.3)";
 			return e;
 		}
+
 		if (which == "little")
 		{
 			var e = new Entity(this.renderer, xpos, ypos, 16);
@@ -99,8 +127,25 @@ function EntityFactory(renderer, img)
 			return e;
 		}
 
+		if (which == "player")
+		{
+			var e = new Player(this.renderer, xpos, ypos, 16);
+			e.FillColour = "rgba(128, 255, 128, 0.3)";
+			return e;
+		}
+
+		if (which == "bullet")
+		{
+			var e = new Entity(this.renderer, xpos, ypos, 8);
+			e.FillColour = "rgba(128, 128, 255, 0.8)";
+			return e;
+		}
+
 		//Else grab an error entity
-		return new Entity(this.renderer, xpos, ypos, 8);
+		var e = new Entity(this.renderer, xpos, ypos, 8);
+		e.FillColour = "rgba(255, 0, 0, 0.5)";
+		return e;
+		
 	}
 
 }

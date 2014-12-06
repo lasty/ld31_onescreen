@@ -89,6 +89,8 @@ function World(renderer, tilefactory, entityfactory)
 
 	this.boxworld = null;
 
+	this.player = null;
+
 	this.entities = Array();
 
 	this.InitPhysics = function()
@@ -100,6 +102,11 @@ function World(renderer, tilefactory, entityfactory)
 
 		this.map.SetupPhysics(this.boxworld);
 
+		this.NewGame();
+	}
+
+	this.NewGame = function()
+	{
 
 		for (var i=0; i<10; i++)
 		{
@@ -113,8 +120,13 @@ function World(renderer, tilefactory, entityfactory)
 			e.AddForceRandom(20);
 		}
 
+
+		this.player = this.entityfactory.MakeEntity("player", 500, 500);
+		this.player.SetupPhysics(this.boxworld);
+		this.player.AddForceRandom(20);
 	}
 
+	this.GetPlayer = function() { return this.player; }
 
 	this.Update = function(dt)
 	{
@@ -130,16 +142,19 @@ function World(renderer, tilefactory, entityfactory)
 			e.Update(dt);
 		}
 
+		this.player.Update(dt);
 	}
 
 	this.Render = function()
 	{
-		this.renderer.SetSmooth(false);
+		//Render tilemap
+		//this.renderer.SetSmooth(false);
 
 		this.map.Render();
 
-		this.renderer.SetSmooth(true);
+		//this.renderer.SetSmooth(true);
 
+		//Render entities
 		for(var i=0; i<this.entities.length; i++)
 		{
 			var e = this.entities[i];
@@ -147,7 +162,7 @@ function World(renderer, tilefactory, entityfactory)
 			e.Render();
 		}
 
-		//Render entities here
+		this.player.Render();
 	}
 
 

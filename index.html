@@ -10,8 +10,8 @@
 
 <!-- Render and Game code in here -->
 
+<script type="text/javascript" src="misc.js"></script>
 <script type="text/javascript" src="renderer.js"></script>
-<script type="text/javascript" src="camera.js"></script>
 <script type="text/javascript" src="tile.js"></script>
 <script type="text/javascript" src="entity.js"></script>
 <script type="text/javascript" src="world.js"></script>
@@ -46,8 +46,12 @@ function Init()
 
 	document.addEventListener('keydown', Game_KeyDown, true);
 	document.addEventListener('keyup', Game_KeyUp, true);
-	canvas.addEventListener('click', Game_MouseClick, true);
-	canvas.addEventListener('doubleclick', function() { alert("doubleclick")}, true);
+	//canvas.addEventListener('click', Game_MouseClick, true);
+
+	canvas.addEventListener('mousedown', Game_MouseDown, true);
+	canvas.addEventListener('mouseup', Game_MouseUp, true);
+
+	canvas.addEventListener('contextmenu', StopEvent, true);
 
 	requestAnimationFrame(Step);
 }
@@ -57,6 +61,8 @@ function Game_KeyDown(e)
 {
 	var char = String.fromCharCode(e.keyCode || e.charCode);
 	game.Key(e, char, true);
+
+	return StopEvent(e);
 }
 
 
@@ -64,13 +70,46 @@ function Game_KeyUp(e)
 {
 	var char = String.fromCharCode(e.keyCode || e.charCode);
 	game.Key(e, char, false);
+
+	return StopEvent(e);
 }
 
 function Game_MouseClick(e)
 {
 	game.Click(e.offsetX, e.offsetY);
+
+	return StopEvent(e);
 }
 
+
+function Game_MouseDown(e)
+{
+	if (e.button == 2)
+	{
+		game.RightClick(e.offsetX, e.offsetY);
+	}
+	else
+	{
+		game.Click(e.offsetX, e.offsetY);
+	}
+
+	return StopEvent(e);
+}
+
+
+function Game_MouseUp(e)
+{
+	//game.Click(e.offsetX, e.offsetY);
+
+	return StopEvent(e);
+}
+
+// Prevents an event from propogating to the system (eg, blocks right click context menu, ctrl-a select all)
+function StopEvent(e)
+{
+	e.preventDefault();
+	return false;
+}
 
 function Update(dt)
 {
@@ -118,8 +157,9 @@ function Step(timestamp)
 <div id="instructions">
 <h2>Instructions:</h2>
 <li>WASD: Move</li>
-<li>Press Reload/F5 to restart</li>
-<li>Currently not much else :/</li>
+<li>Press Reload to restart</li>
+<li>Left Click: Shoot things, but no damage yet</li>
+<li>Right Click: Shoot particles!</li>
 </div>
 
 <div id="loading"> 

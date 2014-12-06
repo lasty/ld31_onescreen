@@ -9,6 +9,11 @@ function Entity(renderer, x, y, radius)
 	this.body = null;
 	this.b2world = null;
 
+	this.categoryBits = BITS_ALL;
+	this.maskBits = BITS_ALL;
+	this.maskBits = BITS_ALL_BUT_PARTICLES;
+
+
 	this.FillColour = "black";
 
 	this.Alive = true;
@@ -18,6 +23,9 @@ function Entity(renderer, x, y, radius)
 		fixDef.density = 0.2;
 		fixDef.friction = 0.5;
 		fixDef.restitution = 0.5;
+
+		fixDef.filter.categoryBits = this.categoryBits;
+		fixDef.filter.maskBits = this.maskBits;
 
 		var bodyDef = new b2.BodyDef();
 		bodyDef.type = b2.Body.b2_dynamicBody;
@@ -90,6 +98,15 @@ function Entity(renderer, x, y, radius)
 	}
 }
 
+function Monster(renderer, x, y, radius) {
+	Entity.call(this, renderer, x, y, radius);
+
+	this.categoryBits = BITS_MONSTERS;
+
+	//everything except monster bullets and particles, and pickups
+	this.maskBits = BITS_WALL | BITS_PLAYER | BITS_MONSTERS | BITS_PLAYER_BULLETS;
+
+}
 
 
 function Player(renderer, x, y, radius) {
@@ -101,6 +118,12 @@ function Player(renderer, x, y, radius) {
 	this.moving_right = false;
 
 	this.move_force = 10;
+
+	this.categoryBits = BITS_PLAYER;
+
+	//everything except player bullets and particles
+	this.maskBits = BITS_WALL | BITS_PLAYER | BITS_MONSTERS | BITS_MONSTER_BULLETS | BITS_PICKUPS;
+
 
 	var parent_update = this.Update;
 	this.Update = function(dt) {
@@ -136,6 +159,29 @@ function Projectile(renderer, x, y, radius) {
 }
 
 
+function PlayerProjectile(renderer, x, y, radius) {
+	Projectile.call(this, renderer, x, y, radius);
+
+	this.categoryBits = BITS_PLAYER_BULLETS;
+
+	//everything except player bullets and particles
+	this.maskBits = BITS_ALL_BUT_PARTICLES;
+
+	
+}
+
+
+function Particle(renderer, x, y, radius) {
+	Projectile.call(this, renderer, x, y, radius);
+
+	this.categoryBits = BITS_PARTICLES;
+
+	//Particles only collide with walls and other particles
+	this.maskBits = BITS_WALL | BITS_PARTICLES;
+
+	
+}
+
 
 function EntityFactory(renderer, img)
 {
@@ -145,15 +191,15 @@ function EntityFactory(renderer, img)
 	this.MakeEntity = function(which, xpos, ypos) {
 		if (which == "big")
 		{
-			var e = new Entity(this.renderer, xpos, ypos, 32);
-			e.FillColour = "rgba(255, 255, 128, 0.3)";
+			var e = new Monster(this.renderer, xpos, ypos, 32);
+			e.FillColour = "rgba(255, 128, 255, 0.3)";
 			return e;
 		}
 
 		if (which == "little")
 		{
-			var e = new Entity(this.renderer, xpos, ypos, 16);
-			e.FillColour = "rgba(255, 128, 255, 0.3)";
+			var e = new Monster(this.renderer, xpos, ypos, 16);
+			e.FillColour = "rgba(255, 255, 128, 0.3)";
 			return e;
 		}
 
@@ -166,8 +212,16 @@ function EntityFactory(renderer, img)
 
 		if (which == "bullet")
 		{
-			var e = new Projectile(this.renderer, xpos, ypos, 8);
+			var e = new PlayerProjectile(this.renderer, xpos, ypos, 8);
 			e.FillColour = "rgba(128, 128, 255, 0.8)";
+			return e;
+		}
+
+		if (which == "particle")
+		{
+			//var e = new PlayerProjectile(this.renderer, xpos, ypos, 8);
+			var e = new Particle(this.renderer, xpos, ypos, Math.random() * 6 + 2);
+			e.FillColour = "rgba(128, 128, 128, 0.5)";
 			return e;
 		}
 

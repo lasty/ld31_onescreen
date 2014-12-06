@@ -26,6 +26,9 @@ function Tile(renderer, img, x, y, w, h, xpos, ypos, collision)
 			fixDef.density = 1;
 			fixDef.friction = 0.5;
 
+			fixDef.filter.categoryBits = BITS_WALL;
+			fixDef.filter.maskBits = BITS_ALL;
+
 			var bodyDef = new b2.BodyDef();
 			bodyDef.type = b2.Body.b2_staticBody;
 			bodyDef.position.x = toWorld(this.position.x + (this.w/2));

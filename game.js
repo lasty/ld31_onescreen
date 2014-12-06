@@ -34,9 +34,24 @@ function Game(renderer, tileimg, entimg)
 		var playerpos = this.world.GetPlayer().position;
 		var clickpos = new b2.Vec2(x, y);
 
-		//this.world.CreateProjectile("bullet", clickpos, clickpos);
-		this.world.CreateProjectile("bullet", playerpos, clickpos);
+		for(var i=0; i<1; i++)
+		{
+			this.world.CreateProjectile("bullet", playerpos, clickpos);
+		}
 	}
+
+
+	this.RightClick = function(x, y)
+	{
+		var playerpos = this.world.GetPlayer().position;
+		var clickpos = new b2.Vec2(x, y);
+
+		for(var i=0; i<5; i++)
+		{
+			this.world.CreateProjectile("particle", playerpos, clickpos);
+		}
+	}
+
 }
 
 

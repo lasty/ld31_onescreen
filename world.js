@@ -98,7 +98,7 @@ function Entity(renderer, x, y, radius)
 
 	this.SetupPhysics = function(b2world) {
 		var fixDef = new b2.FixtureDef();
-		fixDef.density = 1;
+		fixDef.density = 0.2;
 		fixDef.friction = 0.5;
 		fixDef.restitution = 0.5;
 
@@ -121,6 +121,8 @@ function Entity(renderer, x, y, radius)
 		this.body = b2world.CreateBody(bodyDef);
 		//this.body.SetPosition(pos);
 		this.body.CreateFixture(fixDef);
+
+		this.body.SetLinearDamping(4);
 		this.b2world = b2world;
 	}
 
@@ -129,6 +131,18 @@ function Entity(renderer, x, y, radius)
 		{
 			this.b2world.RemoveBody(this.body);
 		}
+	}
+
+	this.AddForce = function (x, y) {
+		if (this.body)
+		{
+			var force = new b2.Vec2(x,y);
+			this.body.ApplyLinearImpulse(force, this.body.GetWorldCenter());
+		}
+	}
+
+	this.AddForceRandom = function(size) {
+		this.AddForce( Math.random() * size*2 - size, Math.random() * size*2 - size);
 	}
 
 	this.Update = function(dt) {
@@ -165,7 +179,8 @@ function World(renderer, tilefactory)
 
 	this.InitPhysics = function()
 	{
-		this.gravity = new b2.Vec2(0, +20);
+		//this.gravity = new b2.Vec2(0, +20);
+		this.gravity = new b2.Vec2(0, 0);
 
 		this.boxworld = new b2.World(this.gravity, true);
 
@@ -224,6 +239,8 @@ function World(renderer, tilefactory)
 	{
 		var ent = new Entity(this.renderer, x, y, r);
 		ent.SetupPhysics(this.boxworld);
+
+		ent.AddForceRandom(20);
 
 		this.entities.push(ent);
 	}

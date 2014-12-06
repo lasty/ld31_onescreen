@@ -1,11 +1,5 @@
 
 
-var SCALE = 32;  //To adjust Box2D units
-
-function toWorld(x) { return x / SCALE; }
-function toScreen(x) { return x * SCALE; }
-
-
 function Tile(renderer, img, x, y, w, h, xpos, ypos, collision)
 {
 	this.renderer = renderer;

@@ -1,11 +1,4 @@
 
-var TILESIZE = 32;
-
-var SCALE = 32;  //To adjust Box2D units
-
-function toWorld(x) { return x / SCALE; }
-function toScreen(x) { return x * SCALE; }
-
 
 function Map(tilefactory, width, height)
 {
@@ -85,90 +78,11 @@ function Map(tilefactory, width, height)
 }
 
 
-function Entity(renderer, x, y, radius)
+function World(renderer, tilefactory, entityfactory)
 {
 	this.renderer = renderer;
-
-	this.position = new b2.Vec2(x, y);
-	this.radius = radius;
-
-	this.body = null;
-	this.b2world = null;
-
-
-	this.SetupPhysics = function(b2world) {
-		var fixDef = new b2.FixtureDef();
-		fixDef.density = 0.2;
-		fixDef.friction = 0.5;
-		fixDef.restitution = 0.5;
-
-		var bodyDef = new b2.BodyDef();
-		bodyDef.type = b2.Body.b2_dynamicBody;
-		bodyDef.position.x = toWorld(this.position.x);
-		bodyDef.position.y = toWorld(this.position.y);
-
-		var pos = b2.Vec2( toWorld(this.position.x), toWorld(this.position.y));
-
-		fixDef.shape = new b2.CircleShape();
-		fixDef.shape.m_radius = toWorld(this.radius);   //XXX Hackery!  Can't work out how to set this normally
-
-		//fixDef.shape = new b2.PolygonShape();
-		//fixDef.shape.SetAsBox(toWorld(this.radius), toWorld(this.radius));
-
-		//console.log(fixDef);
-		//console.log(bodyDef);
-
-		this.body = b2world.CreateBody(bodyDef);
-		//this.body.SetPosition(pos);
-		this.body.CreateFixture(fixDef);
-
-		this.body.SetLinearDamping(4);
-		this.b2world = b2world;
-	}
-
-	this.RemovePhysics = function() {
-		if (this.b2world && this.body)
-		{
-			this.b2world.RemoveBody(this.body);
-		}
-	}
-
-	this.AddForce = function (x, y) {
-		if (this.body)
-		{
-			var force = new b2.Vec2(x,y);
-			this.body.ApplyLinearImpulse(force, this.body.GetWorldCenter());
-		}
-	}
-
-	this.AddForceRandom = function(size) {
-		this.AddForce( Math.random() * size*2 - size, Math.random() * size*2 - size);
-	}
-
-	this.Update = function(dt) {
-		if (this.body)
-		{
-			this.position.x = toScreen(this.body.GetPosition().x);
-			this.position.y = toScreen(this.body.GetPosition().y);
-			this.rotation = this.body.GetAngle();
-		}
-	}
-
-
-	this.Render = function() {
-		this.renderer.SetStroke("yellow");
-		this.renderer.SetFill("rgba(255, 255, 128, 0.3)");
-		this.renderer.CircleFill(this.position.x, this.position.y, this.radius);
-		this.renderer.Circle(this.position.x, this.position.y, this.radius);
-	}
-
-}
-
-
-
-function World(renderer, tilefactory)
-{
-	this.renderer = renderer;
+	this.tilefactory = tilefactory;
+	this.entityfactory = entityfactory;
 
 	this.map = new Map(tilefactory, 32, 20);
 	this.map.ClearMap();
@@ -189,12 +103,14 @@ function World(renderer, tilefactory)
 
 		for (var i=0; i<10; i++)
 		{
-			this.AddEnitity(Math.random() * 400 + 200, Math.random() * 100 + 100, 32);
+			var e = this.AddEnitity("big", Math.random() * 400 + 200, Math.random() * 100 + 100);
+			e.AddForceRandom(20);
 		}
 
 		for (var i=0; i<10; i++)
 		{
-			this.AddEnitity(Math.random() * 400 + 200, Math.random() * 100 + 100, 16);
+			var e = this.AddEnitity("little", Math.random() * 400 + 200, Math.random() * 100 + 100);
+			e.AddForceRandom(20);
 		}
 
 	}
@@ -235,14 +151,14 @@ function World(renderer, tilefactory)
 	}
 
 
-	this.AddEnitity = function(x, y, r)
+	this.AddEnitity = function(name, x, y)
 	{
-		var ent = new Entity(this.renderer, x, y, r);
+		var ent = this.entityfactory.MakeEntity(name, x, y);
 		ent.SetupPhysics(this.boxworld);
 
-		ent.AddForceRandom(20);
-
 		this.entities.push(ent);
+
+		return ent;
 	}
 
 

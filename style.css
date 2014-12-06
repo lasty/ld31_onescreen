@@ -6,6 +6,11 @@ body {
 
 }
 
+a { color: steelblue; }
+a:hover { color: lightsteelblue; }
+a:active { color: white; }
+
+
 body, p {
 	font-family: Roboto, sans-serif;
 	font-size: 12pt;

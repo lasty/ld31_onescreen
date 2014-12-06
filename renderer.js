@@ -7,13 +7,13 @@ var canvas;
 function Renderer(width, height, canvasid)
 {
 	this.canvas = document.getElementById(canvasid);
-	if (!canvas.canvas.getContext)
+	if (!this.canvas.getContext)
 	{
 		alert ("Requires a browser that supports HTML5 Canvas");
 		throw "Canvas fail";
 	}
 
-	this.context = canvas.getContext("2d");
+	this.context = this.canvas.getContext("2d");
 	if (!this.context)
 	{
 		alert ("Error getting canvas 2d context");
@@ -21,8 +21,8 @@ function Renderer(width, height, canvasid)
 	}
 
 
-	this.width = canvas.width = width;
-	this.height = canvas.height = height;
+	this.width = this.canvas.width = width;
+	this.height = this.canvas.height = height;
 
 	this.GetContext = function () {
 		return this.context;

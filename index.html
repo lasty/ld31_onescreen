@@ -12,22 +12,75 @@
 <script type="text/javascript" src="renderer.js"></script>
 
 
+
+<script type="text/javascript">
+
+//// Contains the main wrapper functions to interact with HTML5, and Init functions
+
+var renderer; //gloabal ref
+var last_time; // timestamp of last frame to calculate delta
+
+
+function Init()
+{
+	renderer = new Renderer(800, 600, "canvas");
+
+
+	requestAnimationFrame(Step);
+}
+
+
+function Update(dt)
+{
+
+}
+
+
+function Render()
+{
+
+}
+
+
+function Step(timestamp)
+{
+	if (! last_time)
+	{
+		last_time = timestamp;
+	}
+	var delta_time = (timestamp - last_time) / 1000.0;
+	last_time = timestamp;
+
+	Update(delta_time);
+
+	Render();
+
+
+	requestAnimationFrame(Step);
+}
+
+
+</script>
+
 </head>
 
-<body>
+<body onLoad="Init();">
 
 <h1>Ludum Dare 31 : Entire game on one screen</h1>
 
-<hr/>
-
-<canvas id="canvas" width="800" height="600" >
-</canvas>
+<canvas id="canvas"></canvas>
 
 <hr/>
 
-Doing stuff and things, hopefully.
+By Lasty.
+<br/>
+Github:  <a href="https://github.com/lasty/ld31_onescreen">https://github.com/lasty/ld31_onescreen</a>
+<br/>
 
-<li> May not work properly on Internet Explorer.  Try Chrome or Firefox. </li>
+<br/>
+Notes:
+<li> May take a while to load first time around.</li>
+<li> May not work properly on Internet Explorer.  Use Chrome or Firefox if you have problems. </li>
 
 </body>
 

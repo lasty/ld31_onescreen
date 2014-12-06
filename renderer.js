@@ -29,7 +29,7 @@ function Renderer(width, height, canvasid)
 	};
 
 	// Sets smooth or pixelated image rendering.  Should work for all browsers.
-	this.setSmooth = function(val)
+	this.SetSmooth = function(val)
 	{
 		if (this.context.imageSmoothingEnabled != undefined)
 		{
@@ -79,5 +79,29 @@ function Renderer(width, height, canvasid)
 	}
 
 
+	this.DrawTile = function(img, srcx, srcy, srcw, srch, x, y, w, h) {
+		this.context.drawImage(img, srcx, srcy, srcw, srch, x, y, w, h);
+	}
+
 };
+
+
+function Tile(renderer, img, x, y, w, h)
+{
+	this.renderer = renderer;
+	this.img = img;
+
+	this.x = x;
+	this.y = y;
+	this.w = w;
+	this.h = h;
+
+
+	this.Render = function(x, y, zoom) {
+		this.renderer.DrawTile(this.img, this.x, this.y, this.w, this.h, x, y, w*zoom, h*zoom);
+	}
+
+};
+
+
 

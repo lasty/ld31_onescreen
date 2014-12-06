@@ -11,6 +11,8 @@
 <!-- Render and Game code in here -->
 <script type="text/javascript" src="renderer.js"></script>
 
+<script type="text/javascript" src="game.js"></script>
+
 
 
 <script type="text/javascript">
@@ -20,10 +22,18 @@
 var renderer; //gloabal ref
 var last_time; // timestamp of last frame to calculate delta
 
+var game;
 
 function Init()
 {
-	renderer = new Renderer(800, 600, "canvas");
+	renderer = new Renderer(32*32, 32*20, "canvas");
+
+	document.getElementById("loading").style.display = "none";
+
+
+	var tileimg = document.getElementById("tiles");
+
+	game = new Game(renderer, tileimg);
 
 
 	requestAnimationFrame(Step);
@@ -38,6 +48,11 @@ function Update(dt)
 
 function Render()
 {
+
+	renderer.SetFill("black");
+	renderer.Fill();
+
+	game.Render();
 
 }
 
@@ -67,6 +82,11 @@ function Step(timestamp)
 <body onLoad="Init();">
 
 <h1>Ludum Dare 31 : Entire game on one screen</h1>
+
+<div id="loading"> 
+<h1>Loading... </h1>
+<img src="ProgrammerArt/tiles.png" id="tiles"/>
+</div>
 
 <canvas id="canvas"></canvas>
 

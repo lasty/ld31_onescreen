@@ -1,0 +1,26 @@
+
+body {
+	margin: 20px;
+	background-color: #303030;
+	color: wheat;
+
+}
+
+body, p {
+	font-family: Roboto, sans-serif;
+	font-size: 12pt;
+}
+
+hr {
+	border-color: grey;
+}
+
+h1,h2 {
+	font-family: "Roboto Slab", serif;
+	font-size: 16pt;
+}
+
+#canvas {
+	margin: 20px 0px;
+	border: 1px groove wheat;
+}

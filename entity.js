@@ -11,6 +11,8 @@ function Entity(renderer, x, y, radius)
 
 	this.FillColour = "black";
 
+	this.Alive = true;
+
 	this.SetupPhysics = function(b2world) {
 		var fixDef = new b2.FixtureDef();
 		fixDef.density = 0.2;
@@ -22,11 +24,11 @@ function Entity(renderer, x, y, radius)
 		bodyDef.position.x = toWorld(this.position.x);
 		bodyDef.position.y = toWorld(this.position.y);
 
+
 		var pos = b2.Vec2( toWorld(this.position.x), toWorld(this.position.y));
 
 		fixDef.shape = new b2.CircleShape();
 		fixDef.shape.m_radius = toWorld(this.radius);   //XXX Hackery!  Can't work out how to set this normally
-
 		//fixDef.shape = new b2.PolygonShape();
 		//fixDef.shape.SetAsBox(toWorld(this.radius), toWorld(this.radius));
 
@@ -44,7 +46,7 @@ function Entity(renderer, x, y, radius)
 	this.RemovePhysics = function() {
 		if (this.b2world && this.body)
 		{
-			this.b2world.RemoveBody(this.body);
+			this.b2world.DestroyBody(this.body);
 		}
 	}
 
@@ -71,6 +73,11 @@ function Entity(renderer, x, y, radius)
 	}
 
 
+	this.Kill = function() {
+		//console.log("Kill() called");
+		this.Alive = false;
+	}
+
 	this.Render = function() {
 		this.renderer.SetStroke("yellow");
 		this.renderer.SetFill(this.FillColour);//"rgba(255, 255, 128, 0.3)");
@@ -78,6 +85,9 @@ function Entity(renderer, x, y, radius)
 		this.renderer.Circle(this.position.x, this.position.y, this.radius);
 	}
 
+	this.Delete = function() {
+		this.RemovePhysics();
+	}
 }
 
 
@@ -104,7 +114,27 @@ function Player(renderer, x, y, radius) {
 		parent_update.call(this, dt);
 	}
 }
-//Player.prototype = Object.create(Entity.prototype);
+
+
+function Projectile(renderer, x, y, radius) {
+	Entity.call(this, renderer, x, y, radius);
+
+	this.ttl = 3;  // time to live in seconds
+
+	var parent_update = this.Update;
+	this.Update = function(dt) {
+		this.ttl -= dt;
+
+		if (this.ttl <= 0)
+		{
+			this.Kill();
+		}
+
+		parent_update.call(this, dt);
+
+	}
+}
+
 
 
 function EntityFactory(renderer, img)
@@ -136,7 +166,7 @@ function EntityFactory(renderer, img)
 
 		if (which == "bullet")
 		{
-			var e = new Entity(this.renderer, xpos, ypos, 8);
+			var e = new Projectile(this.renderer, xpos, ypos, 8);
 			e.FillColour = "rgba(128, 128, 255, 0.8)";
 			return e;
 		}

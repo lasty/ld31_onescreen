@@ -23,13 +23,16 @@
 
 //// Contains the main wrapper functions to interact with HTML5, and Init functions
 
-var renderer; //gloabal ref
+//gloabal refs
+var renderer;
+var canvas;
 var last_time; // timestamp of last frame to calculate delta
 
 var game;
 
 function Init()
 {
+	canvas = document.getElementById("canvas");
 	renderer = new Renderer(32*32, 32*20, "canvas");
 
 	document.getElementById("loading").style.display = "none";
@@ -41,8 +44,10 @@ function Init()
 	game = new Game(renderer, tileimg, entimg);
 
 
-	document.addEventListener('keydown', Game_KeyDown, false);
-	document.addEventListener('keyup', Game_KeyUp, false);
+	document.addEventListener('keydown', Game_KeyDown, true);
+	document.addEventListener('keyup', Game_KeyUp, true);
+	canvas.addEventListener('click', Game_MouseClick, true);
+	canvas.addEventListener('doubleclick', function() { alert("doubleclick")}, true);
 
 	requestAnimationFrame(Step);
 }
@@ -59,6 +64,11 @@ function Game_KeyUp(e)
 {
 	var char = String.fromCharCode(e.keyCode || e.charCode);
 	game.Key(e, char, false);
+}
+
+function Game_MouseClick(e)
+{
+	game.Click(e.offsetX, e.offsetY);
 }
 
 

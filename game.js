@@ -29,6 +29,14 @@ function Game(renderer, tileimg, entimg)
 		if (key == "D") { this.world.GetPlayer().moving_right = down; }
 	}
 
+	this.Click = function(x, y)
+	{
+		var playerpos = this.world.GetPlayer().position;
+		var clickpos = new b2.Vec2(x, y);
+
+		//this.world.CreateProjectile("bullet", clickpos, clickpos);
+		this.world.CreateProjectile("bullet", playerpos, clickpos);
+	}
 }
 
 

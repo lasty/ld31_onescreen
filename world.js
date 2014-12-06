@@ -130,16 +130,26 @@ function World(renderer, tilefactory, entityfactory)
 
 	this.Update = function(dt)
 	{
-		this.boxworld.Step(1/60, 8, 3);
+		this.boxworld.Step(1/60, 10, 10);
 		this.boxworld.ClearForces();
 
 		//console.log("Update("+dt+") - num entities: " + this.entities.length);
 
-		for(var i=0; i<this.entities.length; i++)
+		for(var i=0; i<this.entities.length;)
 		{
 			var e = this.entities[i];
 
 			e.Update(dt);
+
+			if (!e.Alive)
+			{
+				e.Delete();
+				this.entities.splice(i, 1);
+			}
+			else
+			{
+				i++;
+			}
 		}
 
 		this.player.Update(dt);
@@ -177,6 +187,25 @@ function World(renderer, tilefactory, entityfactory)
 	}
 
 
+	this.CreateProjectile = function(name, pos, aimto) {
+		var projectile_speed = 10.0;  //TODO set in entity
+
+		var direction = b2.Vec2.Subtract(aimto, pos);
+		direction.Normalize();
+
+		var offset_pos = b2.Vec2.Multiply(18, direction);
+
+		var ent = this.entityfactory.MakeEntity(name, pos.x+offset_pos.x, pos.y+offset_pos.y);
+		ent.SetupPhysics(this.boxworld);
+
+		ent.body.SetBullet(true);
+
+		ent.AddForce(direction.x * projectile_speed, direction.y * projectile_speed);
+
+		this.entities.push(ent);
+
+		return ent;
+	}
 }
 
 

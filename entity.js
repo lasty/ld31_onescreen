@@ -466,7 +466,7 @@ function EntityFactory(renderer, img, playerimg)
 
 		if (which == "player")
 		{
-			var e = new Player(this.renderer, xpos, ypos, 15.5);
+			var e = new Player(this.renderer, xpos, ypos, 15);
 			e.sprite = this.sprites["player"];
 
 			e.hitpoints = e.maxpoints = 100;

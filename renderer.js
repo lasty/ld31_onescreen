@@ -4,9 +4,9 @@ var renderer;
 var canvas;
 
 
-function Renderer(width, height, canvasid)
+function Renderer(width, height, canvas)
 {
-	this.canvas = document.getElementById(canvasid);
+	this.canvas = canvas;
 	if (!this.canvas.getContext)
 	{
 		alert ("Requires a browser that supports HTML5 Canvas");

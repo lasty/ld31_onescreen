@@ -18,6 +18,7 @@ body, p {
 
 hr {
 	border-color: grey;
+	margin-left: 0px;
 }
 
 h1,h2 {
@@ -38,6 +39,11 @@ h2 {
 
 .right {
 	text-align: right;
+
+}
+
+#music, .right, #instructions, hr {
+	width: 1024;
 }
 
 #instructions {
@@ -47,6 +53,8 @@ h2 {
 #canvas {
 	margin: 20px 0px;
 	border: 1px groove wheat;
+	width: 1024;
+	height: 640;
 }
 
 #music {

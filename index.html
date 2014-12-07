@@ -36,7 +36,7 @@ var sound;
 function Init()
 {
 	canvas = document.getElementById("canvas");
-	renderer = new Renderer(32*32, 32*20, "canvas");
+	renderer = new Renderer(32*32, 32*20, canvas);
 
 	document.getElementById("loading").style.display = "none";
 
@@ -88,13 +88,18 @@ function Game_MouseClick(e)
 
 function Game_MouseDown(e)
 {
+	//Because nothing is simple and works across all browsers.. ugh
+	var rect = canvas.getBoundingClientRect();
+	var x = e.clientX - rect.left;
+	var y = e.clientY - rect.top;
+
 	if (e.button == 2)
 	{
-		game.RightClick(e.offsetX, e.offsetY);
+		game.RightClick(x, y);
 	}
 	else
 	{
-		game.Click(e.offsetX, e.offsetY);
+		game.Click(x, y);
 	}
 
 	return StopEvent(e);

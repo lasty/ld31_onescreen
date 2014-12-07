@@ -240,6 +240,7 @@ function World(renderer, tilefactory, entityfactory)
 
 		var direction = b2.Vec2.Subtract(aimto, pos);
 		direction.Normalize();
+		var angle = VectorToAngle(direction);
 
 		var offset_pos = b2.Vec2.Multiply(18, direction);
 
@@ -252,8 +253,39 @@ function World(renderer, tilefactory, entityfactory)
 
 		this.entities.push(ent);
 
+		var effect = this.entityfactory.MakeEntity("pistol", pos.x+offset_pos.x/2, pos.y+offset_pos.y/2, angle);
+		this.entities.push(effect);
+
+
 		return ent;
 	}
+
+
+	this.CreateMelee = function(name, pos, aimto) {
+
+		var direction = b2.Vec2.Subtract(aimto, pos);
+		direction.Normalize();
+		var offset_pos = b2.Vec2.Multiply(5, direction);
+
+		var angle = VectorToAngle(direction);
+
+		//angle -= 45;
+
+		var ent = this.entityfactory.MakeEntity("sword", pos.x+offset_pos.x, pos.y+offset_pos.y, angle);
+		ent.SetupPhysics(this.boxworld);
+
+		ent.body.SetBullet(true);
+
+		var projectile_speed = 0.5;  //TODO set in entity
+		ent.AddForce(direction.x * projectile_speed, direction.y * projectile_speed);
+
+		//ent.AddAngularForce(ent.sword_swing_speed);//direction.x * projectile_speed, direction.y * projectile_speed);
+
+		this.entities.push(ent);
+
+		return ent;
+	}
+
 
 	this.spawnlist = Array();
 

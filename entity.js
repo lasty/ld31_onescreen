@@ -27,6 +27,8 @@ function Entity(renderer, x, y, radius)
 	this.position = new b2.Vec2(x, y);
 	this.angle = 0;
 	this.radius = radius;
+	this.box = null;
+
 
 	this.body = null;
 	this.b2world = null;
@@ -72,17 +74,26 @@ function Entity(renderer, x, y, radius)
 
 		var pos = b2.Vec2( toWorld(this.position.x), toWorld(this.position.y));
 
-		fixDef.shape = new b2.CircleShape();
-		fixDef.shape.m_radius = toWorld(this.radius);   //XXX Hackery!  Can't work out how to set this normally
-		//fixDef.shape = new b2.PolygonShape();
-		//fixDef.shape.SetAsBox(toWorld(this.radius), toWorld(this.radius));
+		if (this.box) //this is a sword
+		{
+			fixDef.density = 0.05;
+			fixDef.shape = new b2.PolygonShape();
+			fixDef.shape.SetAsBox(toWorld(this.sword_width), toWorld(this.sword_length), 0, toWorld(this.sword_length));
+			bodyDef.angle = this.angle;
+		}
+		else //this is a circle
+		{
+			fixDef.shape = new b2.CircleShape();
+			fixDef.shape.m_radius = toWorld(this.radius);   //XXX Hackery!  Can't work out how to set this normally
+		}
+
 
 		//console.log(fixDef);
 		//console.log(bodyDef);
 
 		this.body = b2world.CreateBody(bodyDef);
-		//this.body.SetPosition(pos);
 		this.body.CreateFixture(fixDef);
+
 
 		this.body.SetUserData(this);
 
@@ -102,6 +113,13 @@ function Entity(renderer, x, y, radius)
 		{
 			var force = new b2.Vec2(x,y);
 			this.body.ApplyLinearImpulse(force, this.body.GetWorldCenter());
+		}
+	}
+
+	this.AddAngularForce = function (f) {
+		if (this.body)
+		{
+			this.body.ApplyAngularImpulse(f, this.body.GetWorldCenter());
 		}
 	}
 
@@ -254,6 +272,11 @@ function Monster(renderer, x, y, radius) {
 			this.ShotBy(what);
 			what.Kill();
 		}
+		else if (what instanceof MeleeWeapon)
+		{
+			this.ShotBy(what);
+			what.Kill();
+		}
 	}
 
 	this.SpawnOnKill = function() {
@@ -284,6 +307,9 @@ function Player(renderer, x, y, radius) {
 	this.maskBits = BITS_WALL | BITS_PLAYER | BITS_MONSTERS | BITS_MONSTER_BULLETS | BITS_PICKUPS;
 
 
+	this.melee_cooldown = 0.0;
+	this.ranged_cooldown = 0.0;
+
 	var parent_update = this.Update;
 	this.Update = function(dt) {
 		//console.log("Player-update");
@@ -298,8 +324,46 @@ function Player(renderer, x, y, radius) {
 			if (this.moving_right) { this.AddForce(f, 0); }
 		}
 
+		this.melee_cooldown -= dt;
+		this.ranged_cooldown -= dt;
+
 		parent_update.call(this, dt);
 	}
+
+
+	this.Attack = function(id, playerpos, clickpos)
+	{
+		if (!this.Alive) return;
+
+		console.log("Attack: id is "+id);
+		if (id == 1)
+		{
+			if (this.ranged_cooldown >= 0) { console.log ("range attack on cooldown: " + this.ranged_cooldown); return; }
+
+			for(var i=0; i<1; i++)
+			{
+				game.world.CreateProjectile("bullet", playerpos, clickpos);
+			}
+
+			//TODO add ranged cooldown
+
+			sound.Shoot();
+		}
+
+		else if (id == 2)
+		{
+			if (this.melee_cooldown >= 0) { console.log ("melee attack on cooldown: " + this.melee_cooldown); return; }
+
+			var m = game.world.CreateMelee("sword", playerpos, clickpos);
+
+			this.melee_cooldown = m.ttl + 0.01;
+
+			sound.Shoot();
+		}
+
+		else throw "unknown id in Player.Attack()";
+	}
+
 }
 
 
@@ -404,6 +468,55 @@ function DamageNumbers(renderer, x, y, nums) {
 }
 
 
+function MeleeWeapon(renderer, x, y, radius, sword_width, sword_length, angle) {
+	Particle.call(this, renderer, x, y, radius);
+
+	this.sword_width = sword_width;
+	this.sword_length = sword_length;
+	this.sword_swing_speed = -180;
+	this.angle = angle;
+	
+
+	this.box = true;
+	//this.angle = rotation;
+
+	this.show_outline = true;
+	this.show_fill = true;
+	this.show_fill = true;
+	this.FillColour = "black";
+	this.OutlineColour = "white";
+
+	//Ok sorta bullets
+	this.categoryBits = BITS_PLAYER_BULLETS;
+
+	//everything except player bullets and particles
+	this.maskBits = BITS_ALL_BUT_PARTICLES;
+
+
+	this.show_fill = false;
+	this.rotate_to_velocity = false;
+
+	this.ttl = 0.2;
+	this.ttl_fade = 0.1;
+	this.bullet_damage = 25;
+	
+}
+
+function SpriteOnly(renderer, x, y, radius, angle)
+{
+	Particle.call(this, renderer, x, y, radius);
+
+	this.angle = angle;
+
+	this.ttl = 0.2;
+	this.ttl_fade = 0.1;
+
+	this.show_fill = false;
+	this.show_outline = false;
+
+	this.SetupPhysics = function(b2world) {  }
+}
+
 function EntityFactory(renderer, img, playerimg)
 {
 	this.renderer = renderer;
@@ -422,6 +535,9 @@ function EntityFactory(renderer, img, playerimg)
 		"bullet1" : new Sprite(this.renderer, this.img, 136, 12, 17, 17),
 		"bullet2" : new Sprite(this.renderer, this.img, 160, 12, 17, 17),
 		"bullet3" : new Sprite(this.renderer, this.img, 185, 12, 17, 17),
+
+		"sword" : new Sprite(this.renderer, this.img, 21, 3, 55, 55),
+		"pistol" : new Sprite(this.renderer, this.img, 61, 9, 43, 43),
 	}
 
 	this.MakeEntity = function(which, xpos, ypos, data) {
@@ -494,6 +610,21 @@ function EntityFactory(renderer, img, playerimg)
 			//var e = new PlayerProjectile(this.renderer, xpos, ypos, 8);
 			var e = new DamageNumbers(this.renderer, xpos, ypos, data);
 			//e.FillColour = "rgba(128, 128, 128, 0.8)";
+			return e;
+		}
+
+		if (which == "sword")
+		{
+			var e = new MeleeWeapon(this.renderer, xpos, ypos, 27, 10, 25, data);
+			e.sprite = this.sprites["sword"];
+
+			return e;
+		}
+
+		if (which == "pistol")
+		{
+			var e = new SpriteOnly(this.renderer, xpos, ypos, 27, data);
+			e.sprite = this.sprites["pistol"];
 			return e;
 		}
 

@@ -43,8 +43,9 @@ function Init()
 
 	var tileimg = document.getElementById("tiles");
 	var entimg = document.getElementById("monsters");
+	var playerimg = document.getElementById("player");
 
-	game = new Game(renderer, tileimg, entimg);
+	game = new Game(renderer, tileimg, entimg, playerimg);
 
 	sound = new SoundManager();
 
@@ -177,6 +178,7 @@ Github:  <a href="https://github.com/lasty/ld31_onescreen">https://github.com/la
 <h1>Loading... </h1>
 <img src="ProgrammerArt/tiles.png" id="tiles"/>
 <img src="ProgrammerArt/monsters1.png" id="monsters"/>
+<img src="ProgrammerArt/player.png" id="player"/>
 </div>
 
 <canvas id="canvas"></canvas>

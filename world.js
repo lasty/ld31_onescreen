@@ -130,26 +130,43 @@ function World(renderer, tilefactory, entityfactory)
 		this.NewGame();
 	}
 
+
 	this.NewGame = function()
 	{
 
-		for (var i=0; i<10; i++)
-		{
-			var e = this.AddEntity("big", Math.random() * 400 + 200, Math.random() * 100 + 100);
-			e.AddForceRandom(20);
-		}
-
-		for (var i=0; i<10; i++)
-		{
-			var e = this.AddEntity("little", Math.random() * 400 + 200, Math.random() * 100 + 100);
-			e.AddForceRandom(20);
-		}
+		this.SpawnRound(1);
 
 
 		this.player = this.entityfactory.MakeEntity("player", 500, 500);
 		this.player.SetupPhysics(this.boxworld);
 		this.player.AddForceRandom(20);
 	}
+
+	this.round_data = {
+		1: { "blob": 10, "rat": 15, "spider": 10, "snowman": 8 } ,
+	};
+
+	this.SpawnRound = function(i)
+	{
+		var thisround = this.round_data[i];
+		console.log(thisround);
+
+		for(var monster in thisround)
+		{
+			var n = thisround[monster];
+	
+			console.log(monster);
+			console.log(n);
+
+			for(var i=0; i<n; i++)
+			{
+				var e = this.AddEntity(monster, Math.random() * 400 + 200, Math.random() * 100 + 100);
+				e.AddForceRandom(20);
+			}
+		}
+
+	}
+
 
 	this.GetPlayer = function() { return this.player; }
 

@@ -1,9 +1,9 @@
 
-function Game(renderer, tileimg, entimg)
+function Game(renderer, tileimg, entimg, playerimg)
 {
 	this.renderer = renderer;
 	this.tilefactory = new TileFactory(this.renderer, tileimg);
-	this.entityfactory = new EntityFactory(this.renderer, entimg);
+	this.entityfactory = new EntityFactory(this.renderer, entimg, playerimg);
 
 	this.world = new World(this.renderer, this.tilefactory, this.entityfactory);
 

@@ -404,32 +404,62 @@ function DamageNumbers(renderer, x, y, nums) {
 }
 
 
-function EntityFactory(renderer, img)
+function EntityFactory(renderer, img, playerimg)
 {
 	this.renderer = renderer;
 	this.img = img;
+	this.playerimg = playerimg;
+
+
+	this.sprites = {
+		"rat" : new Sprite(this.renderer, this.img, 87, 81, 29, 29),
+		"blob" : new Sprite(this.renderer, this.img, 9, 79, 34, 34),
+		"spider" : new Sprite(this.renderer, this.img, 77, 134, 51, 51),
+		"snowman" : new Sprite(this.renderer, this.img, 2, 128, 57, 57),
+
+		"player" : new Sprite(this.renderer, this.playerimg, 8, 211, 44, 44),
+
+		"bullet1" : new Sprite(this.renderer, this.img, 136, 12, 17, 17),
+		"bullet2" : new Sprite(this.renderer, this.img, 160, 12, 17, 17),
+		"bullet3" : new Sprite(this.renderer, this.img, 185, 12, 17, 17),
+	}
 
 	this.MakeEntity = function(which, xpos, ypos, data) {
-		if (which == "big")
+		if (which == "rat")
 		{
-			var e = new Monster(this.renderer, xpos, ypos, 32);
-			e.sprite = new Sprite(this.renderer, this.img, 30, 109, 62 ,62);
+			var e = new Monster(this.renderer, xpos, ypos, 29/2);
+			e.sprite = this.sprites["rat"];
 
-			e.FillColour = "rgba(255, 128, 255, 0.2)";
-			e.maxpoints = 200;
-			e.hitpoints = 200;
+			e.hitpoints = e.maxpoints = 50;
+
+			return e;
+		}
+		if (which == "blob")
+		{
+			var e = new Monster(this.renderer, xpos, ypos, 34/2);
+			e.sprite = this.sprites["blob"];
+
+			e.hitpoints = e.maxpoints = 40;
 
 			return e;
 		}
 
-		if (which == "little")
+		if (which == "spider")
 		{
-			var e = new Monster(this.renderer, xpos, ypos, 16);
-			e.sprite = new Sprite(this.renderer, this.img, 129, 121, 52 ,52);
+			var e = new Monster(this.renderer, xpos, ypos, 51/2);
+			e.sprite = this.sprites["spider"];
 
-			e.FillColour = "rgba(255, 255, 128, 0.2)";
-			e.maxpoints = 100;
-			e.hitpoints = 100;
+			e.hitpoints = e.maxpoints = 100;
+
+			return e;
+		}
+
+		if (which == "snowman")
+		{
+			var e = new Monster(this.renderer, xpos, ypos, 57/2);
+			e.sprite = this.sprites["snowman"];
+
+			e.hitpoints = e.maxpoints = 200;
 
 			return e;
 		}
@@ -437,17 +467,17 @@ function EntityFactory(renderer, img)
 		if (which == "player")
 		{
 			var e = new Player(this.renderer, xpos, ypos, 16);
-			e.sprite = new Sprite(this.renderer, this.img, 90, 21, 15 ,15);
-			e.FillColour = "rgba(128, 255, 128, 0.4)";
+			e.sprite = this.sprites["player"];
+
+			e.hitpoints = e.maxpoints = 100;
+
 			return e;
 		}
 
 		if (which == "bullet")
 		{
 			var e = new PlayerProjectile(this.renderer, xpos, ypos, 8);
-			e.sprite = new Sprite(this.renderer, this.img, 65, 22, 15 ,15);
-			//e.sprite = new Sprite(this.renderer, this.img, 90, 21, 15 ,15);
-			e.FillColour = "rgba(128, 128, 255, 0.8)";
+			e.sprite = this.sprites["bullet1"];
 			return e;
 		}
 
@@ -471,7 +501,6 @@ function EntityFactory(renderer, img)
 		var e = new Entity(this.renderer, xpos, ypos, 8);
 		e.FillColour = "rgba(255, 0, 0, 0.5)";
 		return e;
-		
 	}
 
 }

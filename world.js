@@ -189,6 +189,7 @@ function World(renderer, tilefactory, entityfactory)
 	{
 		//Render tilemap
 		//this.renderer.SetSmooth(false);
+		this.renderer.SetAlpha(1.0);
 
 		this.map.Render();
 
@@ -206,9 +207,9 @@ function World(renderer, tilefactory, entityfactory)
 	}
 
 
-	this.AddEntity = function(name, x, y)
+	this.AddEntity = function(name, x, y, data)
 	{
-		var ent = this.entityfactory.MakeEntity(name, x, y);
+		var ent = this.entityfactory.MakeEntity(name, x, y, data);
 		ent.SetupPhysics(this.boxworld);
 
 		this.entities.push(ent);
@@ -247,8 +248,9 @@ function World(renderer, tilefactory, entityfactory)
 			var name = e[0];
 			var pos = e[1];
 			var vel = e[2];
+			var data = e[3];
 
-			var ent = this.AddEntity(name, pos.x, pos.y);
+			var ent = this.AddEntity(name, pos.x, pos.y, data);
 			ent.AddForce(toWorld(vel.x), toWorld(vel.y));
 		}
 
@@ -260,11 +262,11 @@ function World(renderer, tilefactory, entityfactory)
 		}
 	}
 
-	this.SpawnEntity = function(what, pos, vel) {
-		this.spawnlist.push([what, pos, vel ]);
+	this.SpawnEntity = function(what, pos, vel, data) {
+		this.spawnlist.push([what, pos, vel, data]);
 	}
 
-	this.SpawnEffect = function(what, pos, vel) {
+	this.SpawnEffect = function(what, pos, vel, data) {
 		if (what == "bullet_hit")
 		{
 			for (var i=0; i<0; i++)
@@ -287,6 +289,11 @@ function World(renderer, tilefactory, entityfactory)
 			{
 				this.SpawnEntity("particle", pos, vel);
 			}
+		}
+
+		if (what == "damage_text")
+		{
+			this.SpawnEntity("damage_text", pos, vel, data);
 		}
 	}
 

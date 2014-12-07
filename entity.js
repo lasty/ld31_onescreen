@@ -24,6 +24,8 @@ function Entity(renderer, x, y, radius)
 
 	this.FillColour = "black";
 	this.OutlineColour = "grey";
+	this.Alpha = 1.0;
+	
 
 	this.Alive = true;
 
@@ -106,6 +108,15 @@ function Entity(renderer, x, y, radius)
 
 	this.Render = function() {
 
+		if (this.GetParticleFade)
+		{
+			this.renderer.SetAlpha(this.GetParticleFade());
+		}
+		else
+		{
+			this.renderer.SetAlpha(this.Alphe);
+		}
+
 		if (this.show_fill)
 		{
 			this.renderer.SetFill(this.FillColour);//"rgba(255, 255, 128, 0.3)");
@@ -141,6 +152,7 @@ function Entity(renderer, x, y, radius)
 		var col = this.GetHealthBarColour();
 		if (col)
 		{
+			this.renderer.SetAlpha(1.0);
 			this.renderer.SetStroke(col);
 
 			var ctx = this.renderer.GetContext();
@@ -180,6 +192,7 @@ function Entity(renderer, x, y, radius)
 
 		this.hitpoints -= actual_damage;
 
+		game.world.SpawnEffect("damage_text", this.position, this.body.GetLinearVelocity(), actual_damage);
 		sound.Hit();
 	}
 }
@@ -253,6 +266,8 @@ function Projectile(renderer, x, y, radius) {
 
 	this.ttl = 3;  // time to live in seconds
 
+	this.ttl_fade = 1;  // start fading out here
+
 	var parent_update = this.Update;
 	this.Update = function(dt) {
 		this.ttl -= dt;
@@ -264,6 +279,18 @@ function Projectile(renderer, x, y, radius) {
 
 		parent_update.call(this, dt);
 
+	}
+
+	this.GetParticleFade = function()
+	{
+		if (this.ttl > this.ttl_fade) return 1.0;
+
+		var f = (this.ttl / this.ttl_fade);
+
+		if (f < 0) f = 0.0;
+		if (f > 1) f = 1.0;
+
+		return f;
 	}
 
 }
@@ -278,6 +305,8 @@ function PlayerProjectile(renderer, x, y, radius) {
 	this.maskBits = BITS_ALL_BUT_PARTICLES;
 
 
+	this.ttl = 2;
+	this.ttl_fade = 0;
 	this.bullet_damage = 25;
 	
 	this.SpawnOnKill = function() {
@@ -302,7 +331,30 @@ function Particle(renderer, x, y, radius) {
 	//Particles only collide with walls and other particles
 	this.maskBits = BITS_WALL | BITS_PARTICLES;
 
-	
+}
+
+
+function DamageNumbers(renderer, x, y, nums) {
+	Particle.call(this, renderer, x, y, 16);
+
+	this.numbertext = nums;
+
+	this.ttl = 1.0;
+	this.ttl_fade = 0.25;
+
+	this.Render = function() {
+		
+		var ctx = this.renderer.GetContext();
+		ctx.font = "16px Roboto";
+
+		var fade = this.GetParticleFade();
+
+		ctx.fillStyle = "rgba(255, 0, 0, " + fade + ")";
+
+		ctx.fillText(this.numbertext, this.position.x, this.position.y);
+
+	}
+
 }
 
 
@@ -311,7 +363,7 @@ function EntityFactory(renderer, img)
 	this.renderer = renderer;
 	this.img = img;
 
-	this.MakeEntity = function(which, xpos, ypos) {
+	this.MakeEntity = function(which, xpos, ypos, data) {
 		if (which == "big")
 		{
 			var e = new Monster(this.renderer, xpos, ypos, 32);
@@ -347,6 +399,14 @@ function EntityFactory(renderer, img)
 			//var e = new PlayerProjectile(this.renderer, xpos, ypos, 8);
 			var e = new Particle(this.renderer, xpos, ypos, Math.random() * 6 + 2);
 			e.FillColour = "rgba(128, 128, 128, 0.8)";
+			return e;
+		}
+
+		if (which == "damage_text")
+		{
+			//var e = new PlayerProjectile(this.renderer, xpos, ypos, 8);
+			var e = new DamageNumbers(this.renderer, xpos, ypos, data);
+			//e.FillColour = "rgba(128, 128, 128, 0.8)";
 			return e;
 		}
 

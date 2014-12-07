@@ -64,6 +64,9 @@ function Renderer(width, height, canvas)
 		this.context.clearRect(0, 0, this.width, this.height);
 	};
 
+	this.SetAlpha = function(a) {
+		this.context.globalAlpha = a;
+	}
 	
 	// Draws line segment
 	this.Line = function(x1, y1, x2, y2) {

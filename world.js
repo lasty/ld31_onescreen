@@ -1,5 +1,25 @@
 
 
+function MyContactListener() {
+
+	this.BeginContact = function(contact) {
+		var ent1 = contact.GetFixtureA().GetBody().GetUserData();
+		var ent2 = contact.GetFixtureB().GetBody().GetUserData();
+
+		//console.log("Contact!");
+		if (ent1 && ent2)
+		{
+			if (ent1.Collide) ent1.Collide(ent2);
+			if (ent2.Collide) ent2.Collide(ent1);
+		}
+	}
+
+	this.EndContact = function(contact) { }
+	this.PreSolve = function(contact, oldManifold) { }
+	this.PostSolve = function(contact, impulse) { }
+}
+
+
 function Map(tilefactory, width, height)
 {
 	this.tilefactory = tilefactory;
@@ -88,6 +108,7 @@ function World(renderer, tilefactory, entityfactory)
 	this.map.ClearMap();
 
 	this.boxworld = null;
+	this.contactlistener = null;
 
 	this.player = null;
 
@@ -100,6 +121,10 @@ function World(renderer, tilefactory, entityfactory)
 
 		this.boxworld = new b2.World(this.gravity, true);
 
+		this.contactlistener = new MyContactListener();
+
+		this.boxworld.SetContactListener(this.contactlistener);
+
 		this.map.SetupPhysics(this.boxworld);
 
 		this.NewGame();
@@ -110,13 +135,13 @@ function World(renderer, tilefactory, entityfactory)
 
 		for (var i=0; i<10; i++)
 		{
-			var e = this.AddEnitity("big", Math.random() * 400 + 200, Math.random() * 100 + 100);
+			var e = this.AddEntity("big", Math.random() * 400 + 200, Math.random() * 100 + 100);
 			e.AddForceRandom(20);
 		}
 
 		for (var i=0; i<10; i++)
 		{
-			var e = this.AddEnitity("little", Math.random() * 400 + 200, Math.random() * 100 + 100);
+			var e = this.AddEntity("little", Math.random() * 400 + 200, Math.random() * 100 + 100);
 			e.AddForceRandom(20);
 		}
 
@@ -130,6 +155,10 @@ function World(renderer, tilefactory, entityfactory)
 
 	this.Update = function(dt)
 	{
+		//Create any pending entities from the spawn list
+		this.CreateFromSpawnList();
+
+
 		this.boxworld.Step(1/60, 10, 10);
 		this.boxworld.ClearForces();
 
@@ -153,6 +182,7 @@ function World(renderer, tilefactory, entityfactory)
 		}
 
 		this.player.Update(dt);
+
 	}
 
 	this.Render = function()
@@ -176,7 +206,7 @@ function World(renderer, tilefactory, entityfactory)
 	}
 
 
-	this.AddEnitity = function(name, x, y)
+	this.AddEntity = function(name, x, y)
 	{
 		var ent = this.entityfactory.MakeEntity(name, x, y);
 		ent.SetupPhysics(this.boxworld);
@@ -206,6 +236,53 @@ function World(renderer, tilefactory, entityfactory)
 
 		return ent;
 	}
+
+	this.spawnlist = Array();
+
+	this.CreateFromSpawnList = function()
+	{
+		for(var i=0; i<this.spawnlist.length; i++)
+		{
+			var e = this.spawnlist[i];
+			var name = e[0];
+			var pos = e[1];
+			var vel = e[2];
+
+			var ent = this.AddEntity(name, pos.x, pos.y);
+			ent.AddForce(vel.x, vel.y);
+		}
+
+		this.spawnlist = Array();
+
+		if (this.spawnlist.length)
+		{
+			debugger;
+		}
+	}
+
+	this.SpawnEntity = function(what, pos, vel) {
+		this.spawnlist.push([what, pos, vel ]);
+	}
+
+	this.SpawnEffect = function(what, pos, vel) {
+		if (what == "bullet_hit")
+		{
+			for (var i=0; i<5; i++)
+			{
+				this.SpawnEntity("particle", pos, vel);
+			}
+		}
+
+		if (what == "bullet_crumble")
+		{
+			for (var i=0; i<1; i++)
+			{
+				this.SpawnEntity("particle", pos, vel);
+			}
+		}
+	}
+
+
 }
 
 

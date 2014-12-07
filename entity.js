@@ -47,6 +47,8 @@ function Entity(renderer, x, y, radius)
 		//this.body.SetPosition(pos);
 		this.body.CreateFixture(fixDef);
 
+		this.body.SetUserData(this);
+
 		this.body.SetLinearDamping(4);
 		this.b2world = b2world;
 	}
@@ -84,6 +86,8 @@ function Entity(renderer, x, y, radius)
 	this.Kill = function() {
 		//console.log("Kill() called");
 		this.Alive = false;
+
+		if (this.SpawnOnKill) this.SpawnOnKill();
 	}
 
 	this.Render = function() {
@@ -96,7 +100,17 @@ function Entity(renderer, x, y, radius)
 	this.Delete = function() {
 		this.RemovePhysics();
 	}
+
+	this.onContact = function(other) {
+
+	}
+
+	this.ShotBy = function(bullet) {
+		this.Kill();
+	}
+
 }
+
 
 function Monster(renderer, x, y, radius) {
 	Entity.call(this, renderer, x, y, radius);
@@ -106,6 +120,13 @@ function Monster(renderer, x, y, radius) {
 	//everything except monster bullets and particles, and pickups
 	this.maskBits = BITS_WALL | BITS_PLAYER | BITS_MONSTERS | BITS_PLAYER_BULLETS;
 
+	this.Collide = function(what) {
+		if (what instanceof PlayerProjectile)
+		{
+			this.Kill();
+			what.Kill();
+		}
+	}
 }
 
 
@@ -156,6 +177,7 @@ function Projectile(renderer, x, y, radius) {
 		parent_update.call(this, dt);
 
 	}
+
 }
 
 
@@ -168,6 +190,17 @@ function PlayerProjectile(renderer, x, y, radius) {
 	this.maskBits = BITS_ALL_BUT_PARTICLES;
 
 	
+	this.SpawnOnKill = function() {
+		var vel = this.body.GetLinearVelocity();
+		if (vel.Length() < 5)
+		{
+			game.world.SpawnEffect("bullet_crumble", this.position, this.body.GetLinearVelocity());
+		}
+		else
+		{
+			game.world.SpawnEffect("bullet_hit", this.position, this.body.GetLinearVelocity());
+		}
+	}
 }
 
 

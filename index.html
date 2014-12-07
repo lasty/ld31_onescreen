@@ -11,6 +11,7 @@
 <!-- Render and Game code in here -->
 
 <script type="text/javascript" src="misc.js"></script>
+<script type="text/javascript" src="sounds.js"></script>
 <script type="text/javascript" src="renderer.js"></script>
 <script type="text/javascript" src="tile.js"></script>
 <script type="text/javascript" src="entity.js"></script>
@@ -30,6 +31,8 @@ var last_time; // timestamp of last frame to calculate delta
 
 var game;
 
+var sound;
+
 function Init()
 {
 	canvas = document.getElementById("canvas");
@@ -43,6 +46,7 @@ function Init()
 
 	game = new Game(renderer, tileimg, entimg);
 
+	sound = new SoundManager();
 
 	document.addEventListener('keydown', Game_KeyDown, true);
 	document.addEventListener('keyup', Game_KeyUp, true);

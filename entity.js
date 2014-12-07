@@ -125,6 +125,7 @@ function Monster(renderer, x, y, radius) {
 		{
 			this.Kill();
 			what.Kill();
+			sound.Explosion();
 		}
 	}
 }

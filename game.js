@@ -27,6 +27,18 @@ function Game(renderer, tileimg, entimg)
 		if (key == "S") { this.world.GetPlayer().moving_down = down; }
 		if (key == "A") { this.world.GetPlayer().moving_left = down; }
 		if (key == "D") { this.world.GetPlayer().moving_right = down; }
+
+
+		//Debugging sounds
+		if (false)
+		{
+			if (key == "1") sound.Hit();
+			if (key == "2") sound.Shoot();
+			if (key == "3") sound.Pickup();
+			if (key == "4") sound.Explosion();
+			if (key == "5") sound.Powerup();
+		}
+
 	}
 
 	this.Click = function(x, y)
@@ -38,6 +50,7 @@ function Game(renderer, tileimg, entimg)
 		{
 			this.world.CreateProjectile("bullet", playerpos, clickpos);
 		}
+		sound.Shoot();
 	}
 
 

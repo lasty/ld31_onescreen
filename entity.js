@@ -14,7 +14,16 @@ function Entity(renderer, x, y, radius)
 	this.maskBits = BITS_ALL_BUT_PARTICLES;
 
 
+	this.maxpoints = 100;
+	this.hitpoints = 100;
+	this.armour = 1.0;
+
+	this.show_health_bars = false;
+	this.show_outline = false;
+	this.show_fill = true;
+
 	this.FillColour = "black";
+	this.OutlineColour = "grey";
 
 	this.Alive = true;
 
@@ -80,6 +89,11 @@ function Entity(renderer, x, y, radius)
 			this.position.y = toScreen(this.body.GetPosition().y);
 			this.rotation = this.body.GetAngle();
 		}
+
+		if (this.hitpoints <= 0)
+		{
+			this.Kill();
+		}
 	}
 
 
@@ -91,10 +105,60 @@ function Entity(renderer, x, y, radius)
 	}
 
 	this.Render = function() {
-		this.renderer.SetStroke("yellow");
-		this.renderer.SetFill(this.FillColour);//"rgba(255, 255, 128, 0.3)");
-		this.renderer.CircleFill(this.position.x, this.position.y, this.radius);
-		this.renderer.Circle(this.position.x, this.position.y, this.radius);
+
+		if (this.show_fill)
+		{
+			this.renderer.SetFill(this.FillColour);//"rgba(255, 255, 128, 0.3)");
+			this.renderer.CircleFill(this.position.x, this.position.y, this.radius);
+		}
+
+		if (this.show_outline)
+		{
+			this.renderer.SetStroke(this.OutlineColour);
+			this.renderer.Circle(this.position.x, this.position.y, this.radius);
+		}
+
+		if (this.show_health_bars)
+		{
+			this.RenderHealthBars();
+		}
+	}
+
+	this.GetHealthBarColour = function() {
+		var pct = this.hitpoints / this.maxpoints * 100;
+		if (pct == 100) return "";
+		else if (pct >= 100) return "teal";
+		else if (pct >66) return "green";
+		//else if (pct > 40) return "lime";
+		else if (pct > 33) return "orange";
+		else if (pct >= 0) return "red";
+		else return "black";
+	}
+
+	this.RenderHealthBars = function()
+	{
+
+		var col = this.GetHealthBarColour();
+		if (col)
+		{
+			this.renderer.SetStroke(col);
+
+			var ctx = this.renderer.GetContext();
+			var pct = this.hitpoints / this.maxpoints;
+			if (pct < 0) pct = 0.01;
+			if (pct > 1) pct = 1.0;
+
+			var rad = (Math.PI / 2) * pct;
+			var offset = +(Math.PI / 2);
+
+			ctx.beginPath();
+			ctx.arc(this.position.x, this.position.y, this.radius * 1.10, offset-rad, offset+rad, false);
+			ctx.stroke();
+			ctx.beginPath();
+			ctx.arc(this.position.x, this.position.y, this.radius * 1.15, offset-rad, offset+rad, false);
+			ctx.stroke();
+
+		}
 	}
 
 	this.Delete = function() {
@@ -106,9 +170,18 @@ function Entity(renderer, x, y, radius)
 	}
 
 	this.ShotBy = function(bullet) {
-		this.Kill();
+		var bullet_damage = bullet.bullet_damage;
+
+		this.ApplyDamage(bullet.bullet_damage);
 	}
 
+	this.ApplyDamage = function(damage) {
+		var actual_damage = damage * this.armour;
+
+		this.hitpoints -= actual_damage;
+
+		sound.Hit();
+	}
 }
 
 
@@ -120,13 +193,20 @@ function Monster(renderer, x, y, radius) {
 	//everything except monster bullets and particles, and pickups
 	this.maskBits = BITS_WALL | BITS_PLAYER | BITS_MONSTERS | BITS_PLAYER_BULLETS;
 
+	this.show_health_bars = true;
+	this.show_fill = true;
+
 	this.Collide = function(what) {
 		if (what instanceof PlayerProjectile)
 		{
-			this.Kill();
+			this.ShotBy(what);
 			what.Kill();
-			sound.Explosion();
 		}
+	}
+
+	this.SpawnOnKill = function() {
+		sound.Explosion();
+		game.world.SpawnEffect("monster_die", this.position, this.body.GetLinearVelocity());
 	}
 }
 
@@ -143,6 +223,8 @@ function Player(renderer, x, y, radius) {
 
 	this.categoryBits = BITS_PLAYER;
 
+	this.show_health_bars = true;
+
 	//everything except player bullets and particles
 	this.maskBits = BITS_WALL | BITS_PLAYER | BITS_MONSTERS | BITS_MONSTER_BULLETS | BITS_PICKUPS;
 
@@ -150,11 +232,16 @@ function Player(renderer, x, y, radius) {
 	var parent_update = this.Update;
 	this.Update = function(dt) {
 		//console.log("Player-update");
-		var f = this.move_force * dt;
-		if (this.moving_up) { this.AddForce(0, -f); }
-		if (this.moving_down) { this.AddForce(0, f); }
-		if (this.moving_left) { this.AddForce(-f, 0); }
-		if (this.moving_right) { this.AddForce(f, 0); }
+
+		//Don't apply moving when dead
+		if (this.Alive)
+		{
+			var f = this.move_force * dt;
+			if (this.moving_up) { this.AddForce(0, -f); }
+			if (this.moving_down) { this.AddForce(0, f); }
+			if (this.moving_left) { this.AddForce(-f, 0); }
+			if (this.moving_right) { this.AddForce(f, 0); }
+		}
 
 		parent_update.call(this, dt);
 	}
@@ -190,6 +277,8 @@ function PlayerProjectile(renderer, x, y, radius) {
 	//everything except player bullets and particles
 	this.maskBits = BITS_ALL_BUT_PARTICLES;
 
+
+	this.bullet_damage = 25;
 	
 	this.SpawnOnKill = function() {
 		var vel = this.body.GetLinearVelocity();
@@ -226,21 +315,23 @@ function EntityFactory(renderer, img)
 		if (which == "big")
 		{
 			var e = new Monster(this.renderer, xpos, ypos, 32);
-			e.FillColour = "rgba(255, 128, 255, 0.3)";
+			e.FillColour = "rgba(255, 128, 255, 0.2)";
+			e.maxpoints = 200;
+			e.hitpoints = 200;
 			return e;
 		}
 
 		if (which == "little")
 		{
 			var e = new Monster(this.renderer, xpos, ypos, 16);
-			e.FillColour = "rgba(255, 255, 128, 0.3)";
+			e.FillColour = "rgba(255, 255, 128, 0.2)";
 			return e;
 		}
 
 		if (which == "player")
 		{
 			var e = new Player(this.renderer, xpos, ypos, 16);
-			e.FillColour = "rgba(128, 255, 128, 0.3)";
+			e.FillColour = "rgba(128, 255, 128, 0.4)";
 			return e;
 		}
 
@@ -255,7 +346,7 @@ function EntityFactory(renderer, img)
 		{
 			//var e = new PlayerProjectile(this.renderer, xpos, ypos, 8);
 			var e = new Particle(this.renderer, xpos, ypos, Math.random() * 6 + 2);
-			e.FillColour = "rgba(128, 128, 128, 0.5)";
+			e.FillColour = "rgba(128, 128, 128, 0.8)";
 			return e;
 		}
 

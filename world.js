@@ -249,7 +249,7 @@ function World(renderer, tilefactory, entityfactory)
 			var vel = e[2];
 
 			var ent = this.AddEntity(name, pos.x, pos.y);
-			ent.AddForce(vel.x, vel.y);
+			ent.AddForce(toWorld(vel.x), toWorld(vel.y));
 		}
 
 		this.spawnlist = Array();
@@ -267,7 +267,7 @@ function World(renderer, tilefactory, entityfactory)
 	this.SpawnEffect = function(what, pos, vel) {
 		if (what == "bullet_hit")
 		{
-			for (var i=0; i<5; i++)
+			for (var i=0; i<0; i++)
 			{
 				this.SpawnEntity("particle", pos, vel);
 			}
@@ -276,6 +276,14 @@ function World(renderer, tilefactory, entityfactory)
 		if (what == "bullet_crumble")
 		{
 			for (var i=0; i<1; i++)
+			{
+				this.SpawnEntity("particle", pos, vel);
+			}
+		}
+
+		if (what == "monster_die")
+		{
+			for (var i=0; i<10; i++)
 			{
 				this.SpawnEntity("particle", pos, vel);
 			}

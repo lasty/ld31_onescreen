@@ -1,9 +1,31 @@
 
+function Sprite(renderer, img, x, y, w, h)
+{
+	this.renderer = renderer;
+	this.img = img;
+	this.x = x;
+	this.y = y;
+	this.w = w;
+	this.h = h;
+
+	this.Render = function(x, y, rot, zoom) {
+		this.renderer.DrawSprite(this.img, this.x, this.y, this.w, this.h, x, y, zoom, rot);
+	}
+}
+
+function VectorToAngle(v) {
+	var r = Math.atan2(v.y, v.x);
+	var d = r * 180 / Math.PI;
+	
+	return d + 90;
+}
+
 function Entity(renderer, x, y, radius)
 {
 	this.renderer = renderer;
 
 	this.position = new b2.Vec2(x, y);
+	this.angle = 0;
 	this.radius = radius;
 
 	this.body = null;
@@ -18,9 +40,13 @@ function Entity(renderer, x, y, radius)
 	this.hitpoints = 100;
 	this.armour = 1.0;
 
+	this.sprite = null;
+
 	this.show_health_bars = false;
 	this.show_outline = false;
 	this.show_fill = true;
+
+	this.rotate_to_velocity = false;
 
 	this.FillColour = "black";
 	this.OutlineColour = "grey";
@@ -89,7 +115,7 @@ function Entity(renderer, x, y, radius)
 		{
 			this.position.x = toScreen(this.body.GetPosition().x);
 			this.position.y = toScreen(this.body.GetPosition().y);
-			this.rotation = this.body.GetAngle();
+			this.angle = this.body.GetAngle();
 		}
 
 		if (this.hitpoints <= 0)
@@ -114,7 +140,20 @@ function Entity(renderer, x, y, radius)
 		}
 		else
 		{
-			this.renderer.SetAlpha(this.Alphe);
+			this.renderer.SetAlpha(this.Alpha);
+		}
+
+		if (this.sprite)
+		{
+			if (this.rotate_to_velocity)
+			{
+				var angle = VectorToAngle(this.body.GetLinearVelocity());
+				this.sprite.Render(this.position.x, this.position.y, angle, this.radius);
+			}
+			else
+			{
+				this.sprite.Render(this.position.x, this.position.y, this.angle, this.radius);
+			}
 		}
 
 		if (this.show_fill)
@@ -207,7 +246,7 @@ function Monster(renderer, x, y, radius) {
 	this.maskBits = BITS_WALL | BITS_PLAYER | BITS_MONSTERS | BITS_PLAYER_BULLETS;
 
 	this.show_health_bars = true;
-	this.show_fill = true;
+	this.show_fill = false;
 
 	this.Collide = function(what) {
 		if (what instanceof PlayerProjectile)
@@ -237,6 +276,9 @@ function Player(renderer, x, y, radius) {
 	this.categoryBits = BITS_PLAYER;
 
 	this.show_health_bars = true;
+	this.show_fill = false;
+
+	this.rotate_to_velocity = true;
 
 	//everything except player bullets and particles
 	this.maskBits = BITS_WALL | BITS_PLAYER | BITS_MONSTERS | BITS_MONSTER_BULLETS | BITS_PICKUPS;
@@ -305,6 +347,9 @@ function PlayerProjectile(renderer, x, y, radius) {
 	this.maskBits = BITS_ALL_BUT_PARTICLES;
 
 
+	this.show_fill = false;
+	this.rotate_to_velocity = true;
+
 	this.ttl = 2;
 	this.ttl_fade = 0;
 	this.bullet_damage = 25;
@@ -331,6 +376,7 @@ function Particle(renderer, x, y, radius) {
 	//Particles only collide with walls and other particles
 	this.maskBits = BITS_WALL | BITS_PARTICLES;
 
+	this.show_fill = true;
 }
 
 
@@ -367,22 +413,31 @@ function EntityFactory(renderer, img)
 		if (which == "big")
 		{
 			var e = new Monster(this.renderer, xpos, ypos, 32);
+			e.sprite = new Sprite(this.renderer, this.img, 30, 109, 62 ,62);
+
 			e.FillColour = "rgba(255, 128, 255, 0.2)";
 			e.maxpoints = 200;
 			e.hitpoints = 200;
+
 			return e;
 		}
 
 		if (which == "little")
 		{
 			var e = new Monster(this.renderer, xpos, ypos, 16);
+			e.sprite = new Sprite(this.renderer, this.img, 129, 121, 52 ,52);
+
 			e.FillColour = "rgba(255, 255, 128, 0.2)";
+			e.maxpoints = 100;
+			e.hitpoints = 100;
+
 			return e;
 		}
 
 		if (which == "player")
 		{
 			var e = new Player(this.renderer, xpos, ypos, 16);
+			e.sprite = new Sprite(this.renderer, this.img, 90, 21, 15 ,15);
 			e.FillColour = "rgba(128, 255, 128, 0.4)";
 			return e;
 		}
@@ -390,6 +445,8 @@ function EntityFactory(renderer, img)
 		if (which == "bullet")
 		{
 			var e = new PlayerProjectile(this.renderer, xpos, ypos, 8);
+			e.sprite = new Sprite(this.renderer, this.img, 65, 22, 15 ,15);
+			//e.sprite = new Sprite(this.renderer, this.img, 90, 21, 15 ,15);
 			e.FillColour = "rgba(128, 128, 255, 0.8)";
 			return e;
 		}

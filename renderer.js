@@ -92,6 +92,14 @@ function Renderer(width, height, canvas)
 		this.context.drawImage(img, srcx, srcy, srcw, srch, x, y, w, h);
 	}
 
+	this.DrawSprite = function(img, srcx, srcy, srcw, srch, x, y, zoom, rot) {
+		this.context.save();
+		this.context.translate(x, y);
+		this.context.rotate(rot*Math.PI/180);
+		this.context.drawImage(img, srcx, srcy, srcw, srch, -1*zoom, -1*zoom, 2*zoom, 2*zoom);
+		this.context.restore();
+		
+	}
 };
 
 

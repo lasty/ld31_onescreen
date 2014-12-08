@@ -245,13 +245,29 @@ function Entity(renderer, x, y, radius)
 	}
 
 	this.ApplyDamage = function(damage) {
-		var actual_damage = damage * this.armour;
+		var actual_damage = damage - this.armour;
+		if (actual_damage < 1) { actual_damage = 1; }
 
 		this.hitpoints -= actual_damage;
 
 		game.world.SpawnEffect("damage_text", this.position, this.body.GetLinearVelocity(), actual_damage);
-		sound.Hit();
+
+		if (this.Alive)
+		{
+			sound.Hit();
+		}
 	}
+
+	this.AddHealth = function(damage) {
+		if (this.Alive)
+		{
+			this.hitpoints += damage;
+			if (this.hitpoints > this.maxpoints) { this.hitpoints = this.maxpoints; }
+
+			sound.Powerup();
+		}
+	}
+
 }
 
 
@@ -265,6 +281,12 @@ function Monster(renderer, x, y, radius) {
 
 	this.show_health_bars = true;
 	this.show_fill = false;
+
+	this.move_force = 1;
+	this.stunned_cooldown = 1;
+	this.attack_cooldown = 2;
+	this.melee_range = 10;
+	this.melee_damage = 10;
 
 	this.Collide = function(what) {
 		if (what instanceof PlayerProjectile)
@@ -283,6 +305,49 @@ function Monster(renderer, x, y, radius) {
 		sound.Explosion();
 		game.world.SpawnEffect("monster_die", this.position, this.body.GetLinearVelocity());
 	}
+
+	var parent_update = this.Update;
+	this.Update = function(dt) {
+		//console.log("Player-update");
+
+		//Don't apply moving when dead
+		if (this.Alive && this.stunned_cooldown < 0)
+		{
+			//Completely cheat and just get players location
+
+			var player = game.world.GetPlayer();
+			var playerloc = player.position;
+			var vectoplayer = b2.Vec2.Subtract(playerloc, this.position);
+			var dist_to_player = vectoplayer.Length() - this.radius - player.radius;
+			vectoplayer.Normalize();
+			vectoplayer.Multiply(this.move_force * dt);
+
+			this.AddForce(vectoplayer.x, vectoplayer.y);
+
+			parent_update.call(this, dt);
+
+			this.angle = VectorToAngle(vectoplayer);
+
+			if (dist_to_player < this.melee_range && this.attack_cooldown < 0)
+			{
+				player.ApplyDamage(this.melee_damage);
+				if (player.Alive)
+				{
+					sound.Shoot();
+				}
+				this.attack_cooldown = 1.0 + Math.random() * 1;
+			}
+		}
+		else
+		{
+			parent_update.call(this, dt);
+		}
+
+		this.stunned_cooldown -= dt;
+		this.attack_cooldown -= dt;
+
+	}
+
 }
 
 
@@ -330,39 +395,128 @@ function Player(renderer, x, y, radius) {
 		parent_update.call(this, dt);
 	}
 
+	this.shotgun_ammo = 0;
+	this.pistol_ammo = 0;
+
+	this.has_pistol = false;
+	this.has_shotgun = false;
+	this.has_sword = false;
+
 
 	this.Attack = function(id, playerpos, clickpos)
 	{
 		if (!this.Alive) return;
 
-		console.log("Attack: id is "+id);
+		if (this.ranged_cooldown >= 0) { console.log ("range attack on cooldown: " + this.ranged_cooldown); return; }
+		if (this.melee_cooldown >= 0) { console.log ("melee attack on cooldown: " + this.melee_cooldown); return; }
+
+		var selected_weap = "";
+
+		//console.log("Attack: id is "+id);
 		if (id == 1)
 		{
-			if (this.ranged_cooldown >= 0) { console.log ("range attack on cooldown: " + this.ranged_cooldown); return; }
-
-			for(var i=0; i<1; i++)
+			if (this.has_shotgun && this.shotgun_ammo)
 			{
-				game.world.CreateProjectile("bullet", playerpos, clickpos);
+				selected_weap = "shotgun";
 			}
-
-			//TODO add ranged cooldown
-
-			sound.Shoot();
+			else if (this.has_pistol && this.pistol_ammo)
+			{
+				selected_weap = "pistol";
+			}
+			else
+			{
+				selected_weap = "knife";
+			}
 		}
-
 		else if (id == 2)
 		{
-			if (this.melee_cooldown >= 0) { console.log ("melee attack on cooldown: " + this.melee_cooldown); return; }
+			if (this.has_sword)
+			{
+				selected_weap = "sword";
+			}
+			else
+			{
+				selected_weap = "knife";
+			}
+		}
+		else throw "unknown id in Player.Attack()";
 
-			var m = game.world.CreateMelee("sword", playerpos, clickpos);
 
-			this.melee_cooldown = m.ttl + 0.01;
-
+		if (selected_weap == "pistol")
+		{
+			this.pistol_ammo--;
+			game.world.CreateProjectile(1, "bullet1", "pistol_sprite", playerpos, clickpos);
 			sound.Shoot();
 		}
-
-		else throw "unknown id in Player.Attack()";
+		else if (selected_weap == "shotgun")
+		{
+			this.shotgun_ammo--;
+			game.world.CreateProjectile(4, "bullet3", "shotgun_sprite", playerpos, clickpos);
+			this.ranged_cooldown = 0.5;
+			sound.Shoot();
+		}
+		else if (selected_weap == "sword")
+		{
+			var m = game.world.CreateMelee("sword_sprite", playerpos, clickpos);
+			this.melee_cooldown = m.ttl + 0.01;
+			sound.Shoot();
+		}
+		else if (selected_weap == "knife")
+		{
+			var m = game.world.CreateMelee("knife", playerpos, clickpos);
+			this.melee_cooldown = m.ttl + 0.01;
+			sound.Shoot();
+		}
+		else throw "unknown weapon in Player.Attack()";
 	}
+
+	this.AddAmmo = function(what, num) {
+		if (this.Alive)
+		{
+			if (what == "bullet")
+			{
+				this.pistol_ammo += num;
+				sound.Pickup();
+			}
+			else if (what == "shell")
+			{
+				this.shotgun_ammo += num;
+				sound.Pickup();
+			}
+		}
+	}
+
+	this.AddWeapon = function(what) {
+		if (this.Alive)
+		{
+			if (what == "pistol")
+			{
+				this.has_pistol = true;
+				sound.Pickup();
+			}
+			else if (what == "shotgun")
+			{
+				this.has_shotgun = true;
+				sound.Pickup();
+			}
+			else if (what == "sword")
+			{
+				this.has_sword = true;
+				sound.Pickup();
+			}
+		}
+	}
+
+
+	this.AddArmour = function(ac) {
+		if (this.Alive)
+		{
+			this.armour += ac;
+
+			sound.Pickup();
+		}
+	}
+
 
 }
 
@@ -480,9 +634,8 @@ function MeleeWeapon(renderer, x, y, radius, sword_width, sword_length, angle) {
 	this.box = true;
 	//this.angle = rotation;
 
-	this.show_outline = true;
-	this.show_fill = true;
-	this.show_fill = true;
+	this.show_outline = false;
+	this.show_fill = false;
 	this.FillColour = "black";
 	this.OutlineColour = "white";
 
@@ -493,7 +646,6 @@ function MeleeWeapon(renderer, x, y, radius, sword_width, sword_length, angle) {
 	this.maskBits = BITS_ALL_BUT_PARTICLES;
 
 
-	this.show_fill = false;
 	this.rotate_to_velocity = false;
 
 	this.ttl = 0.2;
@@ -501,6 +653,7 @@ function MeleeWeapon(renderer, x, y, radius, sword_width, sword_length, angle) {
 	this.bullet_damage = 25;
 	
 }
+
 
 function SpriteOnly(renderer, x, y, radius, angle)
 {
@@ -516,6 +669,70 @@ function SpriteOnly(renderer, x, y, radius, angle)
 
 	this.SetupPhysics = function(b2world) {  }
 }
+
+
+function Pickup(renderer, x, y, radius)
+{
+	Entity.call(this, renderer, x, y, radius);
+
+	this.categoryBits = BITS_PICKUPS;
+
+	//everything except player bullets and particles
+	this.maskBits = BITS_PLAYER | BITS_MONSTERS | BITS_WALL;
+
+	this.health = null;
+	this.armour = null;
+	this.ammo1 = null;
+	this.ammo2 = null;
+
+	this.show_fill = false;
+	this.show_outline = true;
+
+	this.weapon = null;
+
+
+	this.Collide = function(what) {
+		if (what instanceof Player)
+		{
+			if (this.health)
+			{
+				what.AddHealth(this.health);
+				console.log("+health : " + this.health);
+
+				//sound.Powerup();
+			}
+
+			if (this.armour)
+			{
+				what.AddArmour(this.armour);
+				console.log("+armour : " + this.armour);
+
+				//sound.Powerup();
+			}
+
+			if (this.ammo1)
+			{
+				what.AddAmmo("bullet", this.ammo1);
+				console.log("+bullet : " + this.ammo1);
+			}
+
+			if (this.ammo2)
+			{
+				what.AddAmmo("shell", this.ammo2);
+				console.log("+shell : " + this.ammo2);
+			}
+
+			if (this.weapon)
+			{
+				what.AddWeapon(this.weapon);
+				console.log("+weapon : " + this.weapon);
+			}
+
+			this.Kill();
+		}
+	}
+}
+
 
 function EntityFactory(renderer, img, playerimg)
 {
@@ -536,8 +753,17 @@ function EntityFactory(renderer, img, playerimg)
 		"bullet2" : new Sprite(this.renderer, this.img, 160, 12, 17, 17),
 		"bullet3" : new Sprite(this.renderer, this.img, 185, 12, 17, 17),
 
+		"knife" : new Sprite(this.renderer, this.img, 0, 4, 25, 25),
 		"sword" : new Sprite(this.renderer, this.img, 21, 3, 55, 55),
 		"pistol" : new Sprite(this.renderer, this.img, 61, 9, 43, 43),
+		"shotgun" : new Sprite(this.renderer, this.img, 96, 6, 39, 39),
+
+		"ammo1" : new Sprite(this.renderer, this.img, 71, 46, 20, 20),
+		"ammo2" : new Sprite(this.renderer, this.img, 105, 46, 20, 20),
+
+		"health" : new Sprite(this.renderer, this.img, 134, 45, 20, 20),
+		"armour" : new Sprite(this.renderer, this.img, 167, 46, 20, 20),
+
 	}
 
 	this.MakeEntity = function(which, xpos, ypos, data) {
@@ -590,10 +816,33 @@ function EntityFactory(renderer, img, playerimg)
 			return e;
 		}
 
-		if (which == "bullet")
+		// pistol bullet
+		if (which == "bullet1")
 		{
 			var e = new PlayerProjectile(this.renderer, xpos, ypos, 8);
 			e.sprite = this.sprites["bullet1"];
+
+			e.bullet_damage = 10;
+			return e;
+		}
+
+		// not used
+		if (which == "bullet2")
+		{
+			var e = new PlayerProjectile(this.renderer, xpos, ypos, 8);
+			e.sprite = this.sprites["bullet2"];
+
+			e.bullet_damage = 5;
+			return e;
+		}
+
+		// shotgun bullet
+		if (which == "bullet3")
+		{
+			var e = new PlayerProjectile(this.renderer, xpos, ypos, 8);
+			e.sprite = this.sprites["bullet3"];
+
+			e.bullet_damage = 15;
 			return e;
 		}
 
@@ -613,18 +862,100 @@ function EntityFactory(renderer, img, playerimg)
 			return e;
 		}
 
-		if (which == "sword")
+		if (which == "knife")
+		{
+			var e = new MeleeWeapon(this.renderer, xpos, ypos, 13, 5, 15, data);
+			e.sprite = this.sprites["knife"];
+
+			e.bullet_damage = 10;
+			e.projectile_speed = 0.1;
+			return e;
+		}
+
+		if (which == "sword_sprite")
 		{
 			var e = new MeleeWeapon(this.renderer, xpos, ypos, 27, 10, 25, data);
 			e.sprite = this.sprites["sword"];
 
+			e.bullet_damage = 25;
+			e.projectile_speed = 0.4;
+			return e;
+		}
+
+		if (which == "pistol_sprite")
+		{
+			var e = new SpriteOnly(this.renderer, xpos, ypos, 27, data);
+			e.sprite = this.sprites["pistol"];
+			return e;
+		}
+
+		if (which == "shotgun_sprite")
+		{
+			var e = new SpriteOnly(this.renderer, xpos, ypos, 27, data);
+			e.sprite = this.sprites["shotgun"];
+			return e;
+		}
+
+		if (which == "health")
+		{
+			var e = new Pickup(this.renderer, xpos, ypos, 15);
+			e.sprite = this.sprites["health"];
+
+			e.health = 25;
+			return e;
+		}
+
+		if (which == "armour")
+		{
+			var e = new Pickup(this.renderer, xpos, ypos, 15);
+			e.sprite = this.sprites["armour"];
+
+			e.armour = 1;
+			return e;
+		}
+
+		if (which == "bullet")
+		{
+			var e = new Pickup(this.renderer, xpos, ypos, 15);
+			e.sprite = this.sprites["ammo1"];
+
+			e.ammo1 = 10;
+			return e;
+		}
+
+		if (which == "shell")
+		{
+			var e = new Pickup(this.renderer, xpos, ypos, 15);
+			e.sprite = this.sprites["ammo2"];
+
+			e.ammo2 = 5;
 			return e;
 		}
 
 		if (which == "pistol")
 		{
-			var e = new SpriteOnly(this.renderer, xpos, ypos, 27, data);
+			var e = new Pickup(this.renderer, xpos, ypos, 15);
 			e.sprite = this.sprites["pistol"];
+
+			e.weapon = "pistol";
+			return e;
+		}
+		
+		if (which == "shotgun")
+		{
+			var e = new Pickup(this.renderer, xpos, ypos, 15);
+			e.sprite = this.sprites["shotgun"];
+
+			e.weapon = "shotgun";
+			return e;
+		}
+
+		if (which == "sword")
+		{
+			var e = new Pickup(this.renderer, xpos, ypos, 15);
+			e.sprite = this.sprites["sword"];
+
+			e.weapon = "sword";
 			return e;
 		}
 

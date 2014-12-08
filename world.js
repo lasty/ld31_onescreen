@@ -143,7 +143,8 @@ function World(renderer, tilefactory, entityfactory)
 	}
 
 	this.round_data = {
-		1: { "blob": 10, "rat": 15, "spider": 10, "snowman": 8 } ,
+		1: { "monsters": { "blob": 2, "rat": 2, "spider": 1, "snowman": 1 }
+		, "items" : { "health" : 5, "bullet": 10, "shell":5, "shotgun":1, "pistol":1, "sword":1 , "armour": 3 } }
 	};
 
 	this.SpawnRound = function(i)
@@ -151,16 +152,33 @@ function World(renderer, tilefactory, entityfactory)
 		var thisround = this.round_data[i];
 		console.log(thisround);
 
-		for(var monster in thisround)
+		var monsters = thisround.monsters;
+		var items = thisround.items;
+
+		for(var monster in monsters)
 		{
-			var n = thisround[monster];
+			var n = monsters[monster];
 	
-			console.log(monster);
-			console.log(n);
+			// console.log(monster);
+			//console.log(n);
 
 			for(var i=0; i<n; i++)
 			{
 				var e = this.AddEntity(monster, Math.random() * 400 + 200, Math.random() * 100 + 100);
+				e.AddForceRandom(20);
+			}
+		}
+
+		for(var item in items)
+		{
+			var n = items[item];
+	
+			console.log(item);
+			console.log(n);
+
+			for(var i=0; i<n; i++)
+			{
+				var e = this.AddEntity(item, Math.random() * 400 + 200, Math.random() * 100 + 100);
 				e.AddForceRandom(20);
 			}
 		}
@@ -235,7 +253,7 @@ function World(renderer, tilefactory, entityfactory)
 	}
 
 
-	this.CreateProjectile = function(name, pos, aimto) {
+	this.CreateProjectile = function(num, bulletname, gunname, pos, aimto) {
 		var projectile_speed = 10.0;  //TODO set in entity
 
 		var direction = b2.Vec2.Subtract(aimto, pos);
@@ -244,16 +262,20 @@ function World(renderer, tilefactory, entityfactory)
 
 		var offset_pos = b2.Vec2.Multiply(18, direction);
 
-		var ent = this.entityfactory.MakeEntity(name, pos.x+offset_pos.x, pos.y+offset_pos.y);
-		ent.SetupPhysics(this.boxworld);
+		var ent;
+		for (var i=0; i<num; i++)
+		{
+			ent = this.entityfactory.MakeEntity(bulletname, pos.x+offset_pos.x, pos.y+offset_pos.y);
+			ent.SetupPhysics(this.boxworld);
 
-		ent.body.SetBullet(true);
+			ent.body.SetBullet(true);
 
-		ent.AddForce(direction.x * projectile_speed, direction.y * projectile_speed);
+			ent.AddForce(direction.x * projectile_speed, direction.y * projectile_speed);
 
-		this.entities.push(ent);
+			this.entities.push(ent);
+		}
 
-		var effect = this.entityfactory.MakeEntity("pistol", pos.x+offset_pos.x/2, pos.y+offset_pos.y/2, angle);
+		var effect = this.entityfactory.MakeEntity(gunname, pos.x+offset_pos.x/2, pos.y+offset_pos.y/2, angle);
 		this.entities.push(effect);
 
 
@@ -271,12 +293,12 @@ function World(renderer, tilefactory, entityfactory)
 
 		//angle -= 45;
 
-		var ent = this.entityfactory.MakeEntity("sword", pos.x+offset_pos.x, pos.y+offset_pos.y, angle);
+		var ent = this.entityfactory.MakeEntity(name, pos.x+offset_pos.x, pos.y+offset_pos.y, angle);
 		ent.SetupPhysics(this.boxworld);
 
 		ent.body.SetBullet(true);
 
-		var projectile_speed = 0.5;  //TODO set in entity
+		var projectile_speed = ent.projectile_speed;
 		ent.AddForce(direction.x * projectile_speed, direction.y * projectile_speed);
 
 		//ent.AddAngularForce(ent.sword_swing_speed);//direction.x * projectile_speed, direction.y * projectile_speed);

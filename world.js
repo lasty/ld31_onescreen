@@ -114,6 +114,11 @@ function World(renderer, tilefactory, entityfactory)
 
 	this.entities = Array();
 
+
+	this.hud_timer = 0;
+	this.next_level_timer = 0;
+
+
 	this.InitPhysics = function()
 	{
 		//this.gravity = new b2.Vec2(0, +20);
@@ -179,8 +184,8 @@ function World(renderer, tilefactory, entityfactory)
 		var monsters = thisround.monsters;
 		var items = thisround.items;
 		var loot = thisround.loot;
-		var intro = thisround.intro;
-		var hint = thisround.hint;
+		var intro = thisround.intro || "";
+		var hint = thisround.hint || "";
 
 		var monstercount_text = [];
 
@@ -207,7 +212,7 @@ function World(renderer, tilefactory, entityfactory)
 		if (loot) for(var item in loot)
 		{
 			//TODO spawn inside monsters
-			var n = items[item];
+			var n = loot[item];
 	
 			//console.log(item);
 			//console.log(n);
@@ -237,6 +242,66 @@ function World(renderer, tilefactory, entityfactory)
 
 		monstercount_text = monstercount_text.join("<br/>");
 		console.log(monstercount_text);
+
+		this.SetWaveTitle("Wave " + this.wave, intro, hint, monstercount_text)
+	}
+
+	this.SetWaveTitle = function(wave, intro, hint, counts)
+	{
+
+		var wave_title = document.getElementById("wave_title");
+		var wave_intro = document.getElementById("wave_intro");
+		var hint_text = document.getElementById("hint_text");
+
+		wave_title.innerHTML = wave;
+
+		wave_intro.innerHTML = intro;
+		hint_text.innerHTML = hint;
+
+		var monster_counts = document.getElementById("monster_counts");
+		monster_counts.innerHTML = counts;
+
+		this.hud_timer = 5;
+		this.next_level_timer = 2;
+	}
+
+	this.TestRemoveHud = function(dt)
+	{
+		//console.log(this.hud_timer);
+		this.hud_timer -= dt;
+
+		var hud = document.getElementById("hud")
+
+		if (this.hud_timer < 0)
+		{
+			hud.style.display = "none";
+		}
+		else
+		{
+			hud.style.display = "";
+		}
+	}
+
+	this.TestGotoNextLevel = function(dt)
+	{
+		if (this.monsters_left <= 0)
+		{
+			this.next_level_timer -= dt;
+			if (this.next_level_timer < 0)
+			{
+				this.GotoNextLevel();
+			}
+		}
+	}
+
+	this.TestPlayerDied = function()
+	{
+		var player = this.GetPlayer();
+
+		if (!player.Alive)
+		{
+			this.SetWaveTitle("You Died.",  "Press Reload or Restart to try again", "", "");
+		}
 
 	}
 
@@ -311,6 +376,10 @@ function World(renderer, tilefactory, entityfactory)
 
 
 		this.SetHudText();
+		this.TestRemoveHud(dt);
+		this.TestGotoNextLevel(dt);
+
+		this.TestPlayerDied();
 	}
 
 	this.Render = function()
@@ -458,6 +527,11 @@ function World(renderer, tilefactory, entityfactory)
 		if (what == "damage_text")
 		{
 			this.SpawnEntity("damage_text", pos, vel, data);
+		}
+
+		if (what == "pickup_text")
+		{
+			this.SpawnEntity("pickup_text", pos, vel, data);
 		}
 	}
 

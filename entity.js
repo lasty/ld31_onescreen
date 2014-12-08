@@ -264,6 +264,7 @@ function Entity(renderer, x, y, radius)
 			this.hitpoints += damage;
 			if (this.hitpoints > this.maxpoints) { this.hitpoints = this.maxpoints; }
 
+			//game.world.SpawnEffect("pickup_text", this.position, this.body.GetLinearVelocity(), "+"+damage " health");
 			sound.Powerup();
 		}
 	}
@@ -283,7 +284,7 @@ function Monster(renderer, x, y, radius) {
 	this.show_fill = false;
 
 	this.move_force = 1;
-	this.stunned_cooldown = 1;
+	this.stunned_cooldown = 4;
 	this.attack_cooldown = 2;
 	this.melee_range = 10;
 	this.melee_damage = 10;
@@ -310,9 +311,14 @@ function Monster(renderer, x, y, radius) {
 	this.Update = function(dt) {
 		//console.log("Player-update");
 
+		this.stunned_cooldown -= dt;
+		this.attack_cooldown -= dt;
+
 		//Don't apply moving when dead
 		if (this.Alive && this.stunned_cooldown < 0)
 		{
+			this.body.SetSleepingAllowed(false);
+
 			//Completely cheat and just get players location
 
 			var player = game.world.GetPlayer();
@@ -342,9 +348,6 @@ function Monster(renderer, x, y, radius) {
 		{
 			parent_update.call(this, dt);
 		}
-
-		this.stunned_cooldown -= dt;
-		this.attack_cooldown -= dt;
 
 	}
 
@@ -382,6 +385,8 @@ function Player(renderer, x, y, radius) {
 		//Don't apply moving when dead
 		if (this.Alive)
 		{
+			this.body.SetSleepingAllowed(false);
+
 			var f = this.move_force * dt;
 			if (this.moving_up) { this.AddForce(0, -f); }
 			if (this.moving_down) { this.AddForce(0, f); }
@@ -621,6 +626,27 @@ function DamageNumbers(renderer, x, y, nums) {
 
 }
 
+function PickupText(renderer, x, y, text) {
+	Particle.call(this, renderer, x, y, 20);
+
+	this.text = text;
+
+	this.ttl = 1.5;
+	this.ttl_fade = 0.25;
+
+	this.Render = function() {
+		
+		var ctx = this.renderer.GetContext();
+		ctx.font = "20px Roboto";
+
+		var fade = this.GetParticleFade();
+
+		ctx.fillStyle = "rgba(255, 255, 0, " + fade + ")";
+
+		ctx.fillText(this.text, this.position.x, this.position.y);
+	}
+}
+
 
 function MeleeWeapon(renderer, x, y, radius, sword_width, sword_length, angle) {
 	Particle.call(this, renderer, x, y, radius);
@@ -697,7 +723,7 @@ function Pickup(renderer, x, y, radius)
 			if (this.health)
 			{
 				what.AddHealth(this.health);
-				console.log("+health : " + this.health);
+				game.world.SpawnEffect("pickup_text", what.position, what.body.GetLinearVelocity(), "+"+this.health+" Health");
 
 				//sound.Powerup();
 			}
@@ -705,28 +731,38 @@ function Pickup(renderer, x, y, radius)
 			if (this.armour)
 			{
 				what.AddArmour(this.armour);
-				console.log("+armour : " + this.armour);
+				game.world.SpawnEffect("pickup_text", what.position, what.body.GetLinearVelocity(), "+"+this.armour+" Armour");
 
 				//sound.Powerup();
+			}
+
+			var dontspawnmoretext = false;
+			if (this.weapon)
+			{
+				what.AddWeapon(this.weapon);
+				game.world.SpawnEffect("pickup_text", what.position, what.body.GetLinearVelocity(), this.weapon);
+				dontspawnmoretext = true;
 			}
 
 			if (this.ammo1)
 			{
 				what.AddAmmo("bullet", this.ammo1);
-				console.log("+bullet : " + this.ammo1);
+				if (!dontspawnmoretext)
+				{
+					game.world.SpawnEffect("pickup_text", what.position, what.body.GetLinearVelocity(), "+"+this.ammo1+" Bullets");
+				}
 			}
 
 			if (this.ammo2)
 			{
 				what.AddAmmo("shell", this.ammo2);
-				console.log("+shell : " + this.ammo2);
+
+				if (!dontspawnmoretext)
+				{
+					game.world.SpawnEffect("pickup_text", what.position, what.body.GetLinearVelocity(), "+"+this.ammo2+" Shells");
+				}
 			}
 
-			if (this.weapon)
-			{
-				what.AddWeapon(this.weapon);
-				console.log("+weapon : " + this.weapon);
-			}
 
 			this.Kill();
 		}
@@ -862,6 +898,14 @@ function EntityFactory(renderer, img, playerimg)
 			return e;
 		}
 
+		if (which == "pickup_text")
+		{
+			//var e = new PlayerProjectile(this.renderer, xpos, ypos, 8);
+			var e = new PickupText(this.renderer, xpos, ypos, data);
+			//e.FillColour = "rgba(128, 128, 128, 0.8)";
+			return e;
+		}
+
 		if (which == "knife")
 		{
 			var e = new MeleeWeapon(this.renderer, xpos, ypos, 13, 5, 15, data);
@@ -938,6 +982,7 @@ function EntityFactory(renderer, img, playerimg)
 			e.sprite = this.sprites["pistol"];
 
 			e.weapon = "pistol";
+			e.ammo1 = 10;
 			return e;
 		}
 		
@@ -947,6 +992,7 @@ function EntityFactory(renderer, img, playerimg)
 			e.sprite = this.sprites["shotgun"];
 
 			e.weapon = "shotgun";
+			e.ammo2 = 5;
 			return e;
 		}
 

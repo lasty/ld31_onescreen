@@ -61,6 +61,37 @@ h2 {
 	height: 640;
 }
 
+#hud {
+	position: absolute;
+	border: 2px solid grey;
+	margin: 100px 10% 10%;
+	width: 75%;
+	//background-color: #303030;
+	background-color: rgba(50, 50, 50, 0.8);
+}
+
+#hud hr {
+	width: 99%;
+}
+
+#hud h1 {
+	font-size: 36;
+	margin: 5px;
+	text-align: center;
+}
+
+#hud h2 {
+	font-size: 24;
+	margin: 5px;
+	text-align: left;
+}
+
+#hud div {
+	text-align: left;
+	font-size: 24;
+	margin: 5px;
+}
+
 #music {
 	border: 1px groove wheat;
 }

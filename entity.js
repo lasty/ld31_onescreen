@@ -284,7 +284,7 @@ function Monster(renderer, x, y, radius) {
 	this.show_fill = false;
 
 	this.move_force = 1;
-	this.stunned_cooldown = 4;
+	this.stunned_cooldown = 5.1;
 	this.attack_cooldown = 2;
 	this.melee_range = 10;
 	this.melee_damage = 10;

@@ -219,7 +219,7 @@ function World(renderer, tilefactory, entityfactory)
 
 			for(var i=0; i<n; i++)
 			{
-				var e = this.AddEntity(item, Math.random() * 400 + 200, Math.random() * 100 + 100);
+				var e = this.AddEntity(item, Math.random() * 400 + 200, Math.random() * 300 + 100);
 				e.AddForceRandom(2);
 			}
 		}
@@ -233,7 +233,7 @@ function World(renderer, tilefactory, entityfactory)
 
 			for(var i=0; i<n; i++)
 			{
-				var e = this.AddEntity(item, Math.random() * 400 + 200, Math.random() * 100 + 100);
+				var e = this.AddEntity(item, Math.random() * 400 + 200, Math.random() * 300 + 100);
 				e.AddForceRandom(2);
 			}
 		}

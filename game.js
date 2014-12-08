@@ -59,6 +59,23 @@ function Game(renderer, tileimg, entimg, playerimg)
 		this.world.GetPlayer().Attack(2, playerpos, clickpos);
 	}
 
+	this.RestartGame = function()
+	{
+		this.world = new World(this.renderer, this.tilefactory, this.entityfactory);
+
+		this.world.InitPhysics();
+
+	}
+
+	this.GotoNextLevel = function()
+	{
+		this.world.GotoNextLevel();
+	}
+
+	this.GotoLevel = function(n)
+	{
+		this.world.GotoLevel(n);
+	}
 }
 
 

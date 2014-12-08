@@ -39,8 +39,12 @@ h2 {
 
 .right {
 	text-align: right;
-
 }
+
+.middle {
+	margin-left: 10px;
+}
+
 
 #music, .right, #instructions, hr {
 	width: 1024;

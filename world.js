@@ -139,37 +139,87 @@ function World(renderer, tilefactory, entityfactory)
 
 		this.player = this.entityfactory.MakeEntity("player", 500, 500);
 		this.player.SetupPhysics(this.boxworld);
-		this.player.AddForceRandom(20);
+		this.player.AddForceRandom(2);
 	}
 
-	this.round_data = {
-		1: { "monsters": { "blob": 2, "rat": 2, "spider": 1, "snowman": 1 }
-		, "items" : { "health" : 5, "bullet": 10, "shell":5, "shotgun":1, "pistol":1, "sword":1 , "armour": 3 } }
-	};
+	
+	this.GotoNextLevel = function()
+	{
+		this.GotoLevel(this.wave+1);
+	}
+
+	this.GotoLevel = function(n)
+	{
+		this.SpawnRound(n);
+	}
+
+	this.ClearBoard = function()
+	{
+		for (var i in this.entities)
+		{
+			var e = this.entities[i];
+			e.Delete();
+		}
+
+		this.entities = Array();
+
+		//Clear spawn list, if any
+		this.spawnlist = Array();
+	}
 
 	this.SpawnRound = function(i)
 	{
-		var thisround = this.round_data[i];
+		this.wave = i;
+
+		this.ClearBoard();
+
+		var thisround = wave_data[i];  //See wave_data.js for details
 		console.log(thisround);
 
 		var monsters = thisround.monsters;
 		var items = thisround.items;
+		var loot = thisround.loot;
+		var intro = thisround.intro;
+		var hint = thisround.hint;
 
-		for(var monster in monsters)
+		var monstercount_text = [];
+
+		this.monsters_left = 0;
+
+		if (monsters) for(var monster in monsters)
 		{
 			var n = monsters[monster];
 	
+			monstercount_text.push(n + " x " + monster);
+
 			// console.log(monster);
 			//console.log(n);
+
+			this.monsters_left += n;
 
 			for(var i=0; i<n; i++)
 			{
 				var e = this.AddEntity(monster, Math.random() * 400 + 200, Math.random() * 100 + 100);
-				e.AddForceRandom(20);
+				e.AddForceRandom(2);
 			}
 		}
 
-		for(var item in items)
+		if (loot) for(var item in loot)
+		{
+			//TODO spawn inside monsters
+			var n = items[item];
+	
+			//console.log(item);
+			//console.log(n);
+
+			for(var i=0; i<n; i++)
+			{
+				var e = this.AddEntity(item, Math.random() * 400 + 200, Math.random() * 100 + 100);
+				e.AddForceRandom(2);
+			}
+		}
+
+		if (items) for(var item in items)
 		{
 			var n = items[item];
 	
@@ -179,12 +229,49 @@ function World(renderer, tilefactory, entityfactory)
 			for(var i=0; i<n; i++)
 			{
 				var e = this.AddEntity(item, Math.random() * 400 + 200, Math.random() * 100 + 100);
-				e.AddForceRandom(20);
+				e.AddForceRandom(2);
 			}
 		}
 
+		//setup HUD strings
+
+		monstercount_text = monstercount_text.join("<br/>");
+		console.log(monstercount_text);
+
 	}
 
+	this.SetHudText = function()
+	{
+		var wave = document.getElementById("wave");
+		var monsters_left = document.getElementById("monsters_left");
+
+		var player = this.GetPlayer();
+
+		var has_knife = document.getElementById("has_knife");  //Always has knife
+		var has_sword = document.getElementById("has_sword");
+		var has_pistol = document.getElementById("has_pistol");
+		var has_shotgun = document.getElementById("has_shotgun");
+
+		var health = document.getElementById("health");
+		var armour = document.getElementById("armour");
+
+		var pistol_ammo = document.getElementById("pistol_ammo");
+		var shotgun_ammo = document.getElementById("shotgun_ammo");
+
+		wave.value = this.wave;
+		monsters_left.value = this.monsters_left;
+
+		has_knife.checked = true;
+		has_sword.checked = player.has_sword;
+		has_pistol.checked = player.has_pistol;
+		has_shotgun.checked = player.has_shotgun;
+
+		health.value = player.hitpoints;
+		armour.value = player.armour;
+
+		pistol_ammo.value = player.pistol_ammo;
+		shotgun_ammo.value = player.shotgun_ammo;
+	}
 
 	this.GetPlayer = function() { return this.player; }
 
@@ -199,9 +286,13 @@ function World(renderer, tilefactory, entityfactory)
 
 		//console.log("Update("+dt+") - num entities: " + this.entities.length);
 
+		this.monsters_left = 0;
+
 		for(var i=0; i<this.entities.length;)
 		{
 			var e = this.entities[i];
+
+			if (e instanceof Monster) { this.monsters_left++; }
 
 			e.Update(dt);
 
@@ -218,6 +309,8 @@ function World(renderer, tilefactory, entityfactory)
 
 		this.player.Update(dt);
 
+
+		this.SetHudText();
 	}
 
 	this.Render = function()

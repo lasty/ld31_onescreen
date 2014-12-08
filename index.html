@@ -10,7 +10,12 @@
 
 <!-- Render and Game code in here -->
 
+<script type="text/javascript">
+var wave_data;
+</script>
+
 <script type="text/javascript" src="misc.js"></script>
+<script type="text/javascript" src="wave_data.js"></script>
 <script type="text/javascript" src="sounds.js"></script>
 <script type="text/javascript" src="renderer.js"></script>
 <script type="text/javascript" src="tile.js"></script>
@@ -28,6 +33,8 @@
 var renderer;
 var canvas;
 var last_time; // timestamp of last frame to calculate delta
+
+var wave_data;
 
 var game;
 
@@ -121,6 +128,19 @@ function StopEvent(e)
 	return false;
 }
 
+
+function Game_RestartGame()
+{
+	game.RestartGame();
+}
+
+
+function Game_GotoNextLevel()
+{
+	game.GotoNextLevel();
+}
+
+
 function Update(dt)
 {
 	game.Update(dt);
@@ -181,7 +201,54 @@ Github:  <a href="https://github.com/lasty/ld31_onescreen">https://github.com/la
 <img src="ProgrammerArt/player.png" id="player"/>
 </div>
 
+<hr />
+
+<div id="controls">
+
+<div class="left">
+<label>Wave: <input type="text" id="wave" value="100" size="2" disabled /></label>
+&nbsp; &nbsp; &nbsp;
+<label>Monsters Left: <input type="text" id="monsters_left" value="100" size="2" disabled /></label>
+
+</div>
+
+<div class="right">
+<input type="button" value="Restart Game" onclick="Game_RestartGame()" />
+<input type="button" value="Skip Next Wave" onclick="Game_GotoNextLevel()" />
+</div>
+
+</div>
+
 <canvas id="canvas"></canvas>
+
+<div id="statusbar">
+
+<div class="left">
+<label><input type="checkbox" id="has_knife" disabled  />Knife</label>
+<label><input type="checkbox" id="has_sword" disabled />Sword</label>
+
+<label><input type="checkbox" id="has_pistol" disabled />Pistol</label>
+
+<label><input type="checkbox" id="has_shotgun" disabled />Shotgun</label>
+
+&nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp;
+
+<label><input type="text" id="health" value="100" size="2" disabled />Health</label>
+&nbsp; &nbsp; &nbsp;
+<label><input type="text" id="armour" value="100" size="2" disabled />Armour</label>
+</div>
+
+<div class="right">
+<label><input type="text" id="pistol_ammo" value="10" size="2" disabled />Bullets</label>
+&nbsp; &nbsp; &nbsp;
+<label><input type="text" id="shotgun_ammo" value="10" size="2" disabled />Shells</label>
+</div>
+
+</div>
 
 <hr/>
 

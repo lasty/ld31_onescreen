@@ -776,7 +776,7 @@ function EntityFactory(renderer, img, playerimg)
 
 			return e;
 		}
-		if (which == "blob")
+		if (which == "slime")
 		{
 			var e = new Monster(this.renderer, xpos, ypos, 34/2);
 			e.sprite = this.sprites["blob"];
@@ -914,7 +914,7 @@ function EntityFactory(renderer, img, playerimg)
 			return e;
 		}
 
-		if (which == "bullet")
+		if (which == "bullet" || which == "bullets")
 		{
 			var e = new Pickup(this.renderer, xpos, ypos, 15);
 			e.sprite = this.sprites["ammo1"];
@@ -923,7 +923,7 @@ function EntityFactory(renderer, img, playerimg)
 			return e;
 		}
 
-		if (which == "shell")
+		if (which == "shell" || which == "shells")
 		{
 			var e = new Pickup(this.renderer, xpos, ypos, 15);
 			e.sprite = this.sprites["ammo2"];
@@ -960,6 +960,7 @@ function EntityFactory(renderer, img, playerimg)
 		}
 
 		//Else grab an error entity
+		console.log("Unkown entity name: '" + which +"'");
 		var e = new Entity(this.renderer, xpos, ypos, 8);
 		e.FillColour = "rgba(255, 0, 0, 0.5)";
 		return e;

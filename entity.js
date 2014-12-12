@@ -51,7 +51,7 @@ function Entity(renderer, x, y, radius)
 	this.rotate_to_velocity = false;
 
 	this.FillColour = "black";
-	this.OutlineColour = "grey";
+	this.OutlineColour = "yellow";
 	this.Alpha = 1.0;
 	
 
@@ -105,6 +105,7 @@ function Entity(renderer, x, y, radius)
 		if (this.b2world && this.body)
 		{
 			this.b2world.DestroyBody(this.body);
+			this.body = null;
 		}
 	}
 
@@ -231,6 +232,7 @@ function Entity(renderer, x, y, radius)
 	}
 
 	this.Delete = function() {
+		this.Alive = false;
 		this.RemovePhysics();
 	}
 
@@ -714,8 +716,10 @@ function Pickup(renderer, x, y, radius)
 	this.show_fill = false;
 	this.show_outline = true;
 
-	this.weapon = null;
+	//this.FillColour = "rgba(128, 128, 255, 0.2)";
+	this.OutlineColour = "yellow";
 
+	this.weapon = null;
 
 	this.Collide = function(what) {
 		if (what instanceof Player)

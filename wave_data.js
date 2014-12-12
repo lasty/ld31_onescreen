@@ -37,10 +37,11 @@ wave_data = {
 	, "loot" : { "bullet" : 1  }
 },
 
-6: { "intro" : "And now the LD EasterEgg:  Snowmen!"
-	, "monsters": { "rat": 6, "slime": 3, "spider": 2, "snowman": 2 }
-	, "items" : { "health" : 2 }
-	, "loot" : { "bullet" : 1  }
+6: { "intro" : "And now the 'not a bug anymore' Bonus Round!"
+	, "hint" : "As a consolation prize for game breaking bug, here is some Phat Lewt!"
+	, "monsters": { "rat": 2 }
+	, "items" : { "health" : 4, "armour": 1 }
+	, "loot" : { "bullet" : 3, "sword": 2, "pistol": 2 }
 },
 
 

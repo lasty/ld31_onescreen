@@ -45,12 +45,26 @@ h2 {
 	margin-left: 10px;
 }
 
+input[type="text"] {
+	color: lightsteelblue;
+	font-family: "Roboto", sans-serif;
+	font-size: 12pt;
+	background: #222;
+	border: inset 1px #333;
+	margin: 0px 10px;
+}
 
-#music, .right, #instructions, hr {
+input[type="button"] {
+	font-family: "Roboto", sans-serif;
+	font-size: 12pt;
+}
+
+
+#music, .right, .background, hr {
 	width: 1024;
 }
 
-#instructions {
+.background {
 	background-color: #222;
 }
 

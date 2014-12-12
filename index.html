@@ -72,17 +72,20 @@ function Init()
 function Game_KeyDown(e)
 {
 	var char = String.fromCharCode(e.keyCode || e.charCode);
-	game.Key(e, char, true);
 
-	//return StopEvent(e);
+	var used = game.Key(e, char, true);
+
+	if (used)
+	return StopEvent(e);
 }
 
 
 function Game_KeyUp(e)
 {
 	var char = String.fromCharCode(e.keyCode || e.charCode);
-	game.Key(e, char, false);
+	var used = game.Key(e, char, false);
 
+	if (used)
 	return StopEvent(e);
 }
 
@@ -278,19 +281,69 @@ Music: -
 </audio>
 </div>
 
-<div id="instructions">
+<div id="instructions" class="background">
 <h2>Instructions:</h2>
-<li>WASD: Move</li>
-<li>Press Reload to restart</li>
-<li>Left Click: Shoot things, but no damage yet</li>
-<li>Right Click: Shoot particles!</li>
+<li>WASD: Move  (Arrow keys also work)</li>
+<li>Left Click: Will fire the best projectile weapon that has ammo (or knife if no ammo/gun available)</li>
+<li>Right Click: Will attack with the best melee weapon (sword if you have it, knife if not)</li>
+<li>If you get stuck you can always skip a level, or restart with the buttons on the top right</li>
 </div>
 
+<div class="background">
+<h2>Patch 1 Notes:</h2>
+Fixed Bugs:
+<li>Health kits, etc disappearing on new level.</li>
+<li>Mysterious repeated 7th round replaced with a bonus level.  (Don't edit code on no sleep!)</li>
+<li>Going to round 14 now no longer crashes</li>
+<li>Fix physics bodies deleting twice (rare crash, sometimes exposed by going through all waves)</li>
+<br/>
+
+Fixed Issues:
+<li>Reduced background tile contrast</li>
+<li>Added yellow circles around pickups to make them obvious</li>
+<li>Arrow Keys can now be used as alternative to WASD keys</li>
+<li>Updating the instructions and notes</li>
+</div>
 
 <br/>
-Notes:
+
+<div class="background">
+<h2>Browser Notes:</h2>
 <li> May take a while to load first time around.</li>
-<li> May not work properly on Internet Explorer.  Use Chrome or Firefox if you have problems. </li>
+<li> Sounds dont work on Internet Explorer, and you have to allow scripts to run.  Use Chrome or Firefox if you have problems. </li>
+</div>
+
+<br/>
+
+<div class="background">
+<h2>Libraries used:</h2>
+
+<li>JSBox2D : <a href="https://code.google.com/p/jsbox2d/">https://code.google.com/p/jsbox2d/</a>  </li>
+
+(Which is a javascript implementation of Box2D : <a href="http://box2d.org/">http://box2d.org/</a> )
+</div>
+
+<div class="background">
+<h2>Tools  used:</h2>
+
+<li>
+Abundant music procedurally generated music: <a href="http://www.abundant-music.com/">http://www.abundant-music.com/</a>
+(Exported to MP3 with SynthFont or Timidity++)
+</li> 
+
+<li>
+Sound Effects: SFXR: <a href="http://www.drpetter.se/project_sfxr.html">http://www.drpetter.se/project_sfxr.html</a>
+</li>
+
+<li/>
+Graphics: Gimp  
+</li>
+
+<li/>
+Text Editing: Vim
+</li>
+
+</div>
 
 </body>
 

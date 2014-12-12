@@ -23,10 +23,12 @@ function Game(renderer, tileimg, entimg, playerimg)
 
 	this.Key = function(k, key, down)
 	{
-		if (key == "W") { this.world.GetPlayer().moving_up = down; }
-		if (key == "S") { this.world.GetPlayer().moving_down = down; }
-		if (key == "A") { this.world.GetPlayer().moving_left = down; }
-		if (key == "D") { this.world.GetPlayer().moving_right = down; }
+		var kp = false;
+
+		if (key == "W" || k.keyCode == 38) { this.world.GetPlayer().moving_up = down; kp=true; }
+		if (key == "S" || k.keyCode == 40) { this.world.GetPlayer().moving_down = down; kp=true; }
+		if (key == "A" || k.keyCode == 37) { this.world.GetPlayer().moving_left = down; kp=true; }
+		if (key == "D" || k.keyCode == 39) { this.world.GetPlayer().moving_right = down; kp=true; }
 
 
 		//Debugging sounds
@@ -39,6 +41,7 @@ function Game(renderer, tileimg, entimg, playerimg)
 			if (key == "5") sound.Powerup();
 		}
 
+		return kp;
 	}
 
 	this.Click = function(x, y)
@@ -69,7 +72,7 @@ function Game(renderer, tileimg, entimg, playerimg)
 
 	this.GotoNextLevel = function()
 	{
-		this.world.GotoNextLevel();
+		this.world.GotoNextLevelButton();
 	}
 
 	this.GotoLevel = function(n)

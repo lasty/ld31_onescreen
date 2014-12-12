@@ -139,7 +139,7 @@ function World(renderer, tilefactory, entityfactory)
 	this.NewGame = function()
 	{
 
-		this.SpawnRound(1);
+		this.SpawnRound(1, true);
 
 
 		this.player = this.entityfactory.MakeEntity("player", 500, 500);
@@ -155,31 +155,54 @@ function World(renderer, tilefactory, entityfactory)
 
 	this.GotoLevel = function(n)
 	{
-		this.SpawnRound(n);
+		this.SpawnRound(n, false);
 	}
 
-	this.ClearBoard = function()
+	this.ClearBoard = function(clearall)
 	{
 		for (var i in this.entities)
 		{
 			var e = this.entities[i];
-			e.Delete();
+
+			if (clearall || e instanceof Monster)
+			{
+				e.Delete();
+			}
 		}
 
-		this.entities = Array();
+		if (clearall) this.entities = Array();
 
 		//Clear spawn list, if any
 		this.spawnlist = Array();
 	}
 
-	this.SpawnRound = function(i)
+	this.SpawnRound = function(i, clearall)
 	{
+		if (i >= 14) //!(i in wave_data))
+		{
+			//Just loop back to round 1?
+			i = 1;
+			//clearall = true;
+			//debugger;
+
+			//this.wave = 14;
+			//return;
+		}
+
+	/*
+			debugger;
+			this.ClearBoard(true);
+			this.SpawnRound(1, clearall);
+			return;
+		}
+*/
+
 		this.wave = i;
 
-		this.ClearBoard();
+		this.ClearBoard(clearall);
 
-		var thisround = wave_data[i];  //See wave_data.js for details
-		console.log(thisround);
+		var thisround = wave_data[this.wave];
+
 
 		var monsters = thisround.monsters;
 		var items = thisround.items;
@@ -228,8 +251,8 @@ function World(renderer, tilefactory, entityfactory)
 		{
 			var n = items[item];
 	
-			console.log(item);
-			console.log(n);
+			//console.log(item);
+			//console.log(n);
 
 			for(var i=0; i<n; i++)
 			{
@@ -241,7 +264,7 @@ function World(renderer, tilefactory, entityfactory)
 		//setup HUD strings
 
 		monstercount_text = monstercount_text.join("<br/>");
-		console.log(monstercount_text);
+		//console.log(monstercount_text);
 
 		this.SetWaveTitle("Wave " + this.wave, intro, hint, monstercount_text)
 	}
@@ -282,6 +305,8 @@ function World(renderer, tilefactory, entityfactory)
 		}
 	}
 
+	this.gotonextlevel_button_pressed = false;
+
 	this.TestGotoNextLevel = function(dt)
 	{
 		if (this.monsters_left <= 0)
@@ -289,9 +314,21 @@ function World(renderer, tilefactory, entityfactory)
 			this.next_level_timer -= dt;
 			if (this.next_level_timer < 0)
 			{
+				this.next_level_timer = 5;  //Fixes Race condition?
 				this.GotoNextLevel();
 			}
 		}
+
+		if (this.gotonextlevel_button_pressed)
+		{
+			this.gotonextlevel_button_pressed = false;
+			this.GotoNextLevel();
+		}
+	}
+
+	this.GotoNextLevelButton = function()
+	{
+		this.gotonextlevel_button_pressed = true;
 	}
 
 	this.TestPlayerDied = function()

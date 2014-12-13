@@ -218,7 +218,7 @@ function World(renderer, tilefactory, entityfactory)
 		{
 			var n = monsters[monster];
 	
-			monstercount_text.push(n + " x " + monster);
+			monstercount_text.push(n + " × " + UCFirst(monster));
 
 			// console.log(monster);
 			//console.log(n);

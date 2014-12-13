@@ -3,7 +3,9 @@ body {
 	margin: 20px;
 	background-color: #303030;
 	color: wheat;
+}
 
+.content {
 }
 
 a { color: steelblue; }
@@ -61,22 +63,48 @@ input[type="button"] {
 
 
 #music, .right, .background, hr {
-	width: 1024;
+	width: 1024px;
 }
 
 .background {
-	background-color: #222;
+	background-color: #292929;
+}
+
+#canvas-stack {
+	position: relative;
+	margin: 20px 0px;
+
+	border: 1px groove wheat;
+}
+
+#canvas-stack, #canvas, #input_layer {
+	width: 1024px;
+	height: 640px;
 }
 
 #canvas {
-	margin: 20px 0px;
-	border: 1px groove wheat;
-	width: 1024;
-	height: 640;
+	position: absolute;
+    left: 0px;
+    top: 0px;
+    z-index: 1;
+}
+
+#input_layer {
+	position: absolute;
+    left: 0px;
+    top: 0px;
+    z-index: 100;
+
+	visibility: none;
+	//background: rgba(128, 128, 255, 0.6);
 }
 
 #hud {
 	position: absolute;
+    left: 0px;
+    top: 0px;
+    z-index: 2;
+
 	border: 2px solid grey;
 	margin: 100px;
 	width: 800px;
@@ -88,20 +116,20 @@ input[type="button"] {
 }
 
 #hud h1 {
-	font-size: 36;
+	font-size: 24pt;
 	margin: 5px;
 	text-align: center;
 }
 
 #hud h2 {
-	font-size: 24;
+	/*font-size: 24px;*/
 	margin: 5px;
 	text-align: left;
 }
 
 #hud div {
 	text-align: left;
-	font-size: 24;
+	/*font-size: 24px;*/
 	margin: 5px;
 }
 

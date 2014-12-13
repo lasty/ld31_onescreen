@@ -1,6 +1,10 @@
+<!DOCTYPE HTML>
 <html>
 
 <head>
+
+<meta charset="utf-8">
+
 <title>LD31</title>
 
 <link rel="stylesheet" href="style.css" type="text/css" />
@@ -32,6 +36,7 @@ var wave_data;
 //gloabal refs
 var renderer;
 var canvas;
+var input_layer;
 var last_time; // timestamp of last frame to calculate delta
 
 var wave_data;
@@ -43,7 +48,11 @@ var sound;
 function Init()
 {
 	canvas = document.getElementById("canvas");
+	input_layer = document.getElementById("input_layer");
 	renderer = new Renderer(32*32, 32*20, canvas);
+
+	input_layer.width = canvas.width;
+	input_layer.height = canvas.height;
 
 	document.getElementById("loading").style.display = "none";
 
@@ -60,10 +69,10 @@ function Init()
 	document.addEventListener('keyup', Game_KeyUp, true);
 	//canvas.addEventListener('click', Game_MouseClick, true);
 
-	canvas.addEventListener('mousedown', Game_MouseDown, true);
-	canvas.addEventListener('mouseup', Game_MouseUp, true);
+	input_layer.addEventListener('mousedown', Game_MouseDown, true);
+	input_layer.addEventListener('mouseup', Game_MouseUp, true);
 
-	canvas.addEventListener('contextmenu', StopEvent, true);
+	input_layer.addEventListener('contextmenu', StopEvent, true);
 
 	requestAnimationFrame(Step);
 }
@@ -185,166 +194,198 @@ function Step(timestamp)
 
 <body onLoad="Init();">
 
+<div class="content">
+
 <h1>Ludum Dare 31 : Entire game on one screen</h1>
 
-<div class="left">
-By Lasty.
-- <a href="https://twitter.com/tristan_lasty">@tristan_lasty</a>
-- <a href="https://twitter.com/hashtag/LDJAM?src=hash">#LDJAM</a>
-</div>
-<div class="right">
-Github:  <a href="https://github.com/lasty/ld31_onescreen">https://github.com/lasty/ld31_onescreen</a>
-</div>
-
-
-<div id="loading"> 
-<h1>Loading... </h1>
-<img src="ProgrammerArt/tiles.png" id="tiles"/>
-<img src="ProgrammerArt/monsters1.png" id="monsters"/>
-<img src="ProgrammerArt/player.png" id="player"/>
+<div>
+	<div class="left">
+		By Lasty.
+		- <a href="https://twitter.com/tristan_lasty">@tristan_lasty</a>
+		- <a href="https://twitter.com/hashtag/LDJAM?src=hash">#LDJAM</a>
+	</div>
+	<div class="right">
+		Github:  <a href="https://github.com/lasty/ld31_onescreen">https://github.com/lasty/ld31_onescreen</a>
+	</div>
 </div>
 
 <hr />
 
 <div id="controls">
+	<div class="left">
+		<label>Wave: <input type="text" id="wave" value="100" size="2" disabled /></label>
+		&nbsp; &nbsp; &nbsp;
+		<label>Monsters Left: <input type="text" id="monsters_left" value="100" size="2" disabled /></label>
+	</div>
 
-<div class="left">
-<label>Wave: <input type="text" id="wave" value="100" size="2" disabled /></label>
-&nbsp; &nbsp; &nbsp;
-<label>Monsters Left: <input type="text" id="monsters_left" value="100" size="2" disabled /></label>
-
+	<div class="right">
+		<input type="button" value="Restart Game" onclick="Game_RestartGame()" />
+		<input type="button" value="Skip to Next Wave" onclick="Game_GotoNextLevel()" />
+	</div>
 </div>
 
-<div class="right">
-<input type="button" value="Restart Game" onclick="Game_RestartGame()" />
-<input type="button" value="Skip Next Wave" onclick="Game_GotoNextLevel()" />
-</div>
+<div id="canvas-stack">
+
+	<canvas id="canvas"></canvas>
+
+	<div id="input_layer"></div>
+
+	<div id="loading"> 
+		<h1>Loading... </h1>
+		<img src="ProgrammerArt/tiles.png" id="tiles" alt=""/>
+		<img src="ProgrammerArt/monsters1.png" id="monsters" alt=""/>
+		<img src="ProgrammerArt/player.png" id="player" alt=""/>
+	</div>
+
+
+	<div id="hud">
+		<h1 id="wave_title">Wave 1</h1>
+		<hr />
+		<h2 id="wave_intro">This is something</h2>
+		<hr />
+		<div id="hint_text">
+			Stuff goes here
+		</div>
+		<hr />
+		<div id="monster_counts" style="font-size: 90%">
+			1 x Monster <br/>
+			2 x Something
+		</div>
+	</div>
 
 </div>
-
-<div id="hud">
-<h1 id="wave_title">Wave 1</h1>
-<hr />
-<h2 id="wave_intro">This is something</h2>
-<hr />
-<div id="hint_text">
-Stuff goes here
-</div>
-<hr />
-<div id="monster_counts" style="font-size: 90%">
-1 x Monster <br/>
-2 x Something
-</div>
-
-</div>
-<canvas id="canvas">
-</canvas>
 
 <div id="statusbar">
+	<div class="left">
+		<label><input type="checkbox" id="has_knife" disabled  />Knife</label>
+		<label><input type="checkbox" id="has_sword" disabled />Sword</label>
 
-<div class="left">
-<label><input type="checkbox" id="has_knife" disabled  />Knife</label>
-<label><input type="checkbox" id="has_sword" disabled />Sword</label>
+		<label><input type="checkbox" id="has_pistol" disabled />Pistol</label>
 
-<label><input type="checkbox" id="has_pistol" disabled />Pistol</label>
+		<label><input type="checkbox" id="has_shotgun" disabled />Shotgun</label>
 
-<label><input type="checkbox" id="has_shotgun" disabled />Shotgun</label>
+		&nbsp; &nbsp; &nbsp;
+		&nbsp; &nbsp; &nbsp;
+		&nbsp; &nbsp; &nbsp;
+		&nbsp; &nbsp; &nbsp;
+		&nbsp; &nbsp; &nbsp;
 
-&nbsp; &nbsp; &nbsp;
-&nbsp; &nbsp; &nbsp;
-&nbsp; &nbsp; &nbsp;
-&nbsp; &nbsp; &nbsp;
-&nbsp; &nbsp; &nbsp;
+		<label><input type="text" id="health" value="100" size="2" disabled />Health</label>
+		&nbsp; &nbsp; &nbsp;
+		<label><input type="text" id="armour" value="100" size="2" disabled />Armour</label>
+	</div>
 
-<label><input type="text" id="health" value="100" size="2" disabled />Health</label>
-&nbsp; &nbsp; &nbsp;
-<label><input type="text" id="armour" value="100" size="2" disabled />Armour</label>
-</div>
-
-<div class="right">
-<label><input type="text" id="pistol_ammo" value="10" size="2" disabled />Bullets</label>
-&nbsp; &nbsp; &nbsp;
-<label><input type="text" id="shotgun_ammo" value="10" size="2" disabled />Shells</label>
-</div>
-
+	<div class="right">
+		<label><input type="text" id="pistol_ammo" value="10" size="2" disabled />Bullets</label>
+		&nbsp; &nbsp; &nbsp;
+		<label><input type="text" id="shotgun_ammo" value="10" size="2" disabled />Shells</label>
+	</div>
 </div>
 
 <hr/>
 
 <div id="music">
-Music: - 
-1: <audio controls loop>
-	<source src="Sounds/Music1.mp3" type="audio/mpeg">
-</audio>
-2: <audio controls loop>
-	<source src="Sounds/Music2.mp3" type="audio/mpeg">
-</audio>
+	Music: - 
+	1: <audio controls loop>
+		<source src="Sounds/Music1.mp3" type="audio/mpeg">
+	</audio>
+	2: <audio controls loop>
+		<source src="Sounds/Music2.mp3" type="audio/mpeg">
+	</audio>
 </div>
 
+<hr/>
+
 <div id="instructions" class="background">
-<h2>Instructions:</h2>
-<li>WASD: Move  (Arrow keys also work)</li>
-<li>Left Click: Will fire the best projectile weapon that has ammo (or knife if no ammo/gun available)</li>
-<li>Right Click: Will attack with the best melee weapon (sword if you have it, knife if not)</li>
-<li>If you get stuck you can always skip a level, or restart with the buttons on the top right</li>
+	<h2>Instructions:</h2>
+	<ul>
+		<li>WASD: Move  (Arrow keys also work)</li>
+		<li>Left Click: Will fire the best projectile weapon that has ammo (or knife if no ammo/gun available)</li>
+		<li>Right Click: Will attack with the best melee weapon (sword if you have it, knife if not)</li>
+		<li>If you get stuck you can always skip a level, or restart with the buttons on the top right</li>
+	</ul>
 </div>
 
 <div class="background">
 <h2>Patch 1 Notes:</h2>
 Fixed Bugs:
-<li>Health kits, etc disappearing on new level.</li>
-<li>Mysterious repeated 7th round replaced with a bonus level.  (Don't edit code on no sleep!)</li>
-<li>Going to round 14 now no longer crashes</li>
-<li>Fix physics bodies deleting twice (rare crash, sometimes exposed by going through all waves)</li>
+<ul>
+	<li>Health kits, etc disappearing on new level.</li>
+	<li>Mysterious repeated 7th round replaced with a bonus level.  (Don't edit code on no sleep!)</li>
+	<li>Going to round 14 now no longer crashes</li>
+	<li>Fix physics bodies deleting twice (rare crash, sometimes exposed by going through all waves)</li>
+</ul>
 <br/>
 
 Fixed Issues:
-<li>Reduced background tile contrast</li>
-<li>Added yellow circles around pickups to make them obvious</li>
-<li>Arrow Keys can now be used as alternative to WASD keys</li>
-<li>Updating the instructions and notes</li>
+<ul>
+	<li>Reduced background tile contrast</li>
+	<li>Added yellow circles around pickups to make them obvious</li>
+	<li>Arrow Keys can now be used as alternative to WASD keys</li>
+	<li>Updating the instructions and notes</li>
+</ul>
 </div>
 
-<br/>
+<div class="background">
+<h2>Patch 2 Notes:</h2>
+Fixed Bugs:
+<ul>
+	<li>Fixed the input stealing bug on the HUD Wave intro box.</li>
+</ul>
+Minor UI Improvements:
+<ul>
+	<li>Uppercasing of weapons and monsters names</li>
+	<li>Using unicode multiply sign × instead of the letter x in monster list breakdown</li>
+	<li>Making HTML pass validation</li>
+</ul>
+
+</div>
+
 
 <div class="background">
 <h2>Browser Notes:</h2>
-<li> May take a while to load first time around.</li>
-<li> Sounds dont work on Internet Explorer, and you have to allow scripts to run.  Use Chrome or Firefox if you have problems. </li>
+<ul>
+	<li> May take a while to load first time around.</li>
+	<li> Sounds dont work on Internet Explorer, and you have to allow scripts to run.  Use Chrome or Firefox if you have problems. </li>
+</ul>
 </div>
-
-<br/>
 
 <div class="background">
 <h2>Libraries used:</h2>
 
-<li>JSBox2D : <a href="https://code.google.com/p/jsbox2d/">https://code.google.com/p/jsbox2d/</a>  </li>
-
-(Which is a javascript implementation of Box2D : <a href="http://box2d.org/">http://box2d.org/</a> )
+<ul>
+	<li>JSBox2D : <a href="https://code.google.com/p/jsbox2d/">https://code.google.com/p/jsbox2d/</a>
+	<br/>(Which is a javascript implementation of Box2D : <a href="http://box2d.org/">http://box2d.org/</a> )
+	</li>
+	
+</ul>
 </div>
 
 <div class="background">
 <h2>Tools  used:</h2>
 
-<li>
-Abundant music procedurally generated music: <a href="http://www.abundant-music.com/">http://www.abundant-music.com/</a>
-(Exported to MP3 with SynthFont or Timidity++)
-</li> 
+<ul>
+	<li>
+	Abundant music procedurally generated music: <a href="http://www.abundant-music.com/">http://www.abundant-music.com/</a>
+	(Exported to MP3 with SynthFont or Timidity++)
+	</li> 
 
-<li>
-Sound Effects: SFXR: <a href="http://www.drpetter.se/project_sfxr.html">http://www.drpetter.se/project_sfxr.html</a>
-</li>
+	<li>
+	Sound Effects: SFXR: <a href="http://www.drpetter.se/project_sfxr.html">http://www.drpetter.se/project_sfxr.html</a>
+	</li>
 
-<li/>
-Graphics: Gimp  
-</li>
+	<li>
+	Graphics: Gimp  
+	</li>
 
-<li/>
-Text Editing: Vim
-</li>
+	<li>
+	Text Editing: Vim
+	</li>
+</ul>
 
 </div>
 
+</div>
 </body>
 
 </html>

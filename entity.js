@@ -414,8 +414,17 @@ function Player(renderer, x, y, radius) {
 	{
 		if (!this.Alive) return;
 
-		if (this.ranged_cooldown >= 0) { console.log ("range attack on cooldown: " + this.ranged_cooldown); return; }
-		if (this.melee_cooldown >= 0) { console.log ("melee attack on cooldown: " + this.melee_cooldown); return; }
+		if (this.ranged_cooldown >= 0)
+		{
+			//console.log ("range attack on cooldown: " + this.ranged_cooldown);
+			return;
+		}
+
+		if (this.melee_cooldown >= 0)
+		{
+			//console.log ("melee attack on cooldown: " + this.melee_cooldown);
+			return;
+		}
 
 		var selected_weap = "";
 
@@ -744,7 +753,8 @@ function Pickup(renderer, x, y, radius)
 			if (this.weapon)
 			{
 				what.AddWeapon(this.weapon);
-				game.world.SpawnEffect("pickup_text", what.position, what.body.GetLinearVelocity(), this.weapon);
+				var weaptxt = UCFirst(this.weapon);
+				game.world.SpawnEffect("pickup_text", what.position, what.body.GetLinearVelocity(), weaptxt);
 				dontspawnmoretext = true;
 			}
 

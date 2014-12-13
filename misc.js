@@ -6,6 +6,12 @@ var SCALE = 32;  //To adjust Box2D units
 function toWorld(x) { return x / SCALE; }
 function toScreen(x) { return x * SCALE; }
 
+//Capitalize first letter
+function UCFirst(string)
+{
+	return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 //For collision masks
 
 var BITS_WALL = 1;
